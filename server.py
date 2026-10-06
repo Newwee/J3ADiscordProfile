@@ -457,19 +457,38 @@ def api_version_update():
         )
 
     # สร้างสคริปต์ .bat ใน %TEMP% เพื่อรอให้โปรเซสเก่าปิด แล้วแทนที่ไฟล์ .exe และเปิดใหม่ทันที
+    # ต้องล้างตัวแปร _MEIPASS2 และ _PYI_* ของ PyInstaller เพื่อไม่ให้ตัวใหม่ไปเรียกโฟลเดอร์ _MEI ตัวเก่าที่ถูกลบไปแล้ว
     import tempfile
     bat_path = os.path.join(tempfile.gettempdir(), "j3a_self_update.bat")
     bat_content = f"""@echo off
 chcp 65001 >nul
+set "_MEIPASS2="
+set "_PYI_APPLICATION_HOME_DIR="
+set "_PYI_ARCHIVE_FILE="
+set "_PYI_PARENT_PROCESS_LEVEL="
+set "PYINSTALLER_RESET_ENVIRONMENT=1"
+set "PYTHONHOME="
+set "PYTHONPATH="
 timeout /t 2 /nobreak >nul
 taskkill /F /IM "J3ADiscordProfile.exe" >nul 2>&1
-timeout /t 1 /nobreak >nul
+timeout /t 2 /nobreak >nul
 move /Y "{tmp_exe}" "{exe_path}" >nul 2>&1
-start "" "{exe_path}"
+if exist "{tmp_exe}" (
+    timeout /t 2 /nobreak >nul
+    move /Y "{tmp_exe}" "{exe_path}" >nul 2>&1
+)
+powershell -NoProfile -WindowStyle Hidden -Command "Start-Process -FilePath '{exe_path}' -WorkingDirectory '{exe_dir}'"
 del "%~f0"
 """
     with open(bat_path, "w", encoding="utf-8") as f:
         f.write(bat_content)
+
+    clean_env = {
+        k: v
+        for k, v in os.environ.items()
+        if not k.upper().startswith(("_MEI", "_PYI", "PYTHON", "TCL_", "TK_"))
+    }
+    clean_env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
 
     with lock:
         if S["worker"]:
@@ -477,6 +496,7 @@ del "%~f0"
     log("ดาวน์โหลดสำเร็จ! กำลังรีสตาร์ทเพื่อติดตั้งเวอร์ชันใหม่…", "ok")
     subprocess.Popen(
         ["cmd.exe", "/c", bat_path],
+        env=clean_env,
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000),
     )
     threading.Timer(0.6, lambda: os._exit(0)).start()
