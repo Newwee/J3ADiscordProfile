@@ -1,0 +1,14 @@
+{
+  "version": "1.2.0",
+  "release_date": "2026-10-06",
+  "github_repo": "Newwee/J3ADiscordProfile",
+  "version_check_url": "https://raw.githubusercontent.com/Newwee/J3ADiscordProfile/main/version.json",
+  "download_url": "https://github.com/Newwee/J3ADiscordProfile/releases/latest/download/J3ADiscordProfile.exe",
+  "drive_url": "https://drive.google.com/file/d/18Mt5mytIu-jB7Jt7efyr_nTxWGkDTuV0/view?usp=drive_link",
+  "changelog": [
+    "เพิ่มระบบ Priority Mode (Competing) ให้แอปแสดงอยู่บนสุดของหน้าโปรไฟล์เสมอ ทับทุกเกม 100%",
+    "ซิงค์รูปไอคอนแอปหลักและ Art Assets ล่าสุดจาก Discord อัตโนมัติ (แก้ปัญหารูปติดแคชเก่า)",
+    "เพิ่มปุ่มตรวจสอบเวอร์ชัน (Check Version) พร้อมระบบอัปเดตอัตโนมัติในคลิกเดียว",
+    "เพิ่มปุ่มถอนการติดตั้งโปรแกรม (Uninstaller) ล้างไฟล์และทางลัดหน้าจอครบวงจร"
+  ]
+}

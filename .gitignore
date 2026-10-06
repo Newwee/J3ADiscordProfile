@@ -1,0 +1,10 @@
+# Build artifacts & large binaries (uploaded via GitHub Releases)
+build/
+dist/
+__pycache__/
+*.pyc
+*.exe
+*.zip
+
+# Keep license secret salt private from public repo
+license_manager.py

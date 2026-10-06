@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>J3A Discord Profile</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0c10; --card:#12161dcc; --card2:#171c26; --border:#1f2632; --input:#0c0f14; --input-b:#242c3a;
+  --text:#e8ebf1; --muted:#8a93a5; --faint:#4d5565; --ok:#22c55e; --err:#ef4444; --warn:#f59e0b;
+  --accent:#7c5cff; --accent-soft:#7c5cff26;
+  --sans:'Space Grotesk','Noto Sans Thai','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono',Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#root{position:relative;z-index:1}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:42px;height:42px;border-radius:12px;background:conic-gradient(from 200deg,var(--accent),#3b82f6,#06b6d4,var(--accent));display:grid;place-items:center;box-shadow:0 0 28px var(--accent-soft)}
+.logo i{width:16px;height:16px;border-radius:50%;background:var(--bg);display:block}
+h1{font-size:22px;margin:0;letter-spacing:-.02em;font-weight:700}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+.pill{display:flex;align-items:center;gap:9px;padding:9px 16px;border-radius:999px;background:var(--card);border:1px solid var(--border);font-size:13px;font-weight:500;backdrop-filter:blur(8px)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--faint)}
+.dot.online{background:var(--ok);box-shadow:0 0 0 0 #22c55e88;animation:pulse 1.6s infinite}
+.dot.connecting{background:var(--warn);animation:pulse2 1s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px #22c55e00}100%{box-shadow:0 0 0 0 #22c55e00}}
+@keyframes pulse2{50%{opacity:.35}}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;backdrop-filter:blur(10px)}
+.card h2{margin:0 0 16px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.card h2 .title-wrap{display:flex;align-items:center;gap:8px}
+.card h2 .title-wrap:before{content:"";width:6px;height:6px;border-radius:2px;background:var(--accent)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field label{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;font-weight:500}
+.field label b{font-family:var(--mono);font-weight:400;color:var(--faint);font-size:11px}
+.field label b.bad{color:var(--err)}
+input[type=text],input[type=datetime-local],select{width:100%;background:var(--input);border:1px solid var(--input-b);color:var(--text);border-radius:10px;padding:11px 13px;font:inherit;font-size:14px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+input.bad-input{border-color:var(--err)}
+input::placeholder{color:var(--faint)}
+input[type=datetime-local]{font-family:var(--mono);font-size:13.5px;color-scheme:dark}
+input:disabled{opacity:.5}
+.btn{font:inherit;font-weight:600;font-size:14px;border:1px solid var(--input-b);background:var(--card2);color:var(--text);padding:11px 18px;border-radius:10px;cursor:pointer;transition:transform .12s,background .15s,border-color .15s,opacity .15s}
+.btn:hover:not(:disabled){border-color:var(--accent);background:#1d2330}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 6px 24px var(--accent-soft)}
+.btn.primary:hover:not(:disabled){background:#8f73ff}
+.btn.danger{background:#dc2626;border-color:#dc2626;color:#fff}
+.btn.danger:hover:not(:disabled){background:#ef4444;border-color:#ef4444}
+.btn.sm{padding:7px 12px;font-size:12.5px;border-radius:8px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .btn.primary,.actions .btn.danger{flex:1;min-width:150px;padding:13px 18px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;font-size:14px}
+.switch small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.tg{position:relative;width:44px;height:25px;border-radius:999px;background:var(--input-b);border:0;cursor:pointer;flex:none;transition:background .2s}
+.tg:after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .2s}
+.tg.on{background:var(--accent)} .tg.on:after{transform:translateX(19px)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hint{font-size:12px;color:var(--muted);line-height:1.55;margin-top:12px}
+.warn-t{color:var(--warn)}
+.err-t{color:var(--err);font-size:11.5px;margin-top:2px}
+
+/* Preview Box */
+.pv{background:#15181f;border:1px solid var(--border);border-radius:14px;padding:18px}
+.pv .tag{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
+.pv-body{display:flex;gap:16px;align-items:center}
+.art{position:relative;width:82px;height:82px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#3b82f6);flex:none;display:grid;place-items:center;font-size:12px;color:#ffffffcc;font-weight:600;overflow:visible}
+.art img.main-img{width:100%;height:100%;object-fit:cover;border-radius:12px;display:block}
+.art .sm-box{position:absolute;right:-7px;bottom:-7px;width:30px;height:30px;border-radius:50%;background:#06b6d4;border:3px solid #15181f;display:grid;place-items:center;font-size:8px;overflow:hidden;box-shadow:0 2px 6px #0008}
+.art .sm-box img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pv-txt{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:13.5px}
+.pv-txt div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-title{font-weight:700;font-size:14.5px;color:#fff}
+.pv-state{color:var(--muted)}
+.pv-time{color:var(--ok);font-family:var(--mono);font-size:12.5px;margin-top:2px}
+.pv-btns{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.pv-btns span{text-align:center;padding:8px;border-radius:8px;background:#232833;font-size:13px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.since{margin-top:12px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+
+/* Console */
+.console{background:var(--input);border:1px solid var(--input-b);border-radius:12px;height:230px;overflow:auto;padding:12px 14px;font-family:var(--mono);font-size:12px;line-height:1.7}
+.console .ln{display:flex;gap:10px}
+.console .t{color:var(--faint);flex:none}
+.console .info{color:var(--muted)} .console .ok{color:var(--ok)} .console .warn{color:var(--warn)} .console .err{color:var(--err)}
+.toast{position:fixed;right:24px;bottom:24px;z-index:10;max-width:340px;padding:13px 18px;border-radius:12px;background:#1d2330;border:1px solid var(--border);font-size:13.5px;box-shadow:0 12px 40px #000a;animation:in .25s}
+.toast.err{border-color:var(--err)} .toast.ok{border-color:var(--ok)}
+@keyframes in{from{transform:translateY(16px);opacity:0}}
+
+/* Guide */
+.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.guide-btn{display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:var(--accent-soft);border:1px solid var(--accent);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,transform .12s}
+.guide-btn:hover{background:#7c5cff44}.guide-btn:active{transform:scale(.97)}
+a.btn{text-decoration:none;display:inline-block}
+.modal-bg{position:fixed;inset:0;z-index:20;background:#05070bd9;backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}}
+.modal{width:100%;max-width:660px;max-height:92vh;display:flex;flex-direction:column;background:#12161d;border:1px solid var(--border);border-radius:18px;box-shadow:0 30px 80px #000c;overflow:hidden;animation:in .25s}
+.m-head{padding:20px 24px 0}
+.m-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.m-kicker{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.m-x{width:32px;height:32px;border-radius:9px;border:1px solid var(--input-b);background:var(--card2);color:var(--muted);font-size:16px;cursor:pointer}
+.m-x:hover{color:#fff;border-color:var(--accent)}
+.m-steps{display:flex;gap:6px;margin-top:14px}
+.m-steps button{flex:1;height:5px;border:0;border-radius:99px;background:var(--input-b);cursor:pointer;padding:0;transition:background .2s}
+.m-steps button.done{background:#7c5cff77}.m-steps button.on{background:var(--accent)}
+.m-body{padding:20px 24px;overflow:auto;flex:1}
+.m-body h3{margin:0 0 6px;font-size:20px;letter-spacing:-.01em}
+.m-body .lead{color:var(--muted);font-size:13.5px;margin:0 0 18px;line-height:1.6}
+.m-body b{color:#fff;font-weight:600}
+.gl{list-style:none;margin:0;padding:0;counter-reset:g;display:flex;flex-direction:column;gap:13px}
+.gl li{counter-increment:g;display:flex;gap:12px;font-size:14px;line-height:1.65}
+.gl li:before{content:counter(g);flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:#b9a8ff;font-size:12px;font-weight:700;display:grid;place-items:center;margin-top:1px}
+.gl.plain li:before{content:"";width:6px;height:6px;border-radius:2px;background:var(--accent);margin:9px 9px 0 9px}
+.m-body code{font-family:var(--mono);font-size:12.5px;background:var(--input);border:1px solid var(--input-b);padding:1px 7px;border-radius:6px;color:#cdbfff}
+.gtip{margin-top:16px;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.65;background:#f59e0b14;border:1px solid #f59e0b44;color:#f5d28a}
+.gtip.info{background:var(--accent-soft);border-color:#7c5cff55;color:#d6ccff}
+.m-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 24px;border-top:1px solid var(--border);background:#0f1319}
+.m-foot .r{display:flex;gap:8px}
+.m-count{font-size:12px;color:var(--faint);font-family:var(--mono)}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<script>
+(function(){
+  const c=document.getElementById('bg'),x=c.getContext('2d');
+  const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const blobs=[[.2,.25,.38,'124,92,255'],[.85,.2,.32,'59,130,246'],[.6,.9,.4,'6,182,212']].map((b,i)=>({x:b[0],y:b[1],r:b[2],c:b[3],p:i*2.1}));
+  let w,h,t=0;
+  function size(){const d=devicePixelRatio||1;w=c.width=innerWidth*d;h=c.height=innerHeight*d;}
+  addEventListener('resize',size);size();
+  function draw(){
+    t+=.0025;x.clearRect(0,0,w,h);
+    for(const b of blobs){
+      const cx=(b.x+Math.sin(t+b.p)*.08)*w,cy=(b.y+Math.cos(t*.8+b.p)*.08)*h,r=b.r*Math.max(w,h);
+      const g=x.createRadialGradient(cx,cy,0,cx,cy,r);
+      g.addColorStop(0,`rgba(${b.c},.16)`);g.addColorStop(1,`rgba(${b.c},0)`);
+      x.fillStyle=g;x.fillRect(0,0,w,h);
+    }
+    const s=34*(devicePixelRatio||1);x.fillStyle='rgba(255,255,255,.045)';
+    for(let i=s/2;i<w;i+=s)for(let j=s/2;j<h;j+=s)x.fillRect(i,j,1.5,1.5);
+    if(!still)requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const EMPTY = { 
+  client_id:'', activity_type:'competing', details:'', state:'', large_image:'', large_text:'', small_image:'', small_text:'',
+  btn1_text:'', btn1_url:'', btn2_text:'', btn2_url:'' 
+};
+
+const pad = n => String(n).padStart(2, '0');
+const toLocalInput = ts => { 
+  const d = new Date(ts*1000);
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; 
+};
+
+const isValidUrl = url => !url || /^https?:\/\/.+/i.test(url.trim());
+
+const api = (path, body) => fetch(path, body === undefined ? {} :
+  { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })
+  .then(r => r.json().catch(()=>({})).then(j => ({ ...j, _status:r.status })));
+
+function elapsedText(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec/3600), m = Math.floor(sec%3600/60), s = sec%60;
+  const years = Math.floor(sec/31557600), days = Math.floor(sec%31557600/86400);
+  return { 
+    clock: `${h}:${pad(m)}:${pad(s)} elapsed`, 
+    human: years ? `≈ ${years} ปี ${days} วัน` : (days ? `≈ ${days} วัน` : '') 
+  };
+}
+
+function Field({ label, k, form, set, max, placeholder, disabled, isUrl }) {
+  const val = form[k] || '';
+  const n = val.length;
+  const badUrl = isUrl && val.trim() !== '' && !isValidUrl(val);
+
+  return (
+    <div className="field">
+      <label>
+        <span>{label}</span>
+        {max && <b className={n > max ? 'bad' : ''}>{n}/{max}</b>}
+      </label>
+      <input 
+        type="text" 
+        value={val} 
+        placeholder={placeholder} 
+        disabled={disabled}
+        className={badUrl ? 'bad-input' : ''}
+        onChange={e => set(k, e.target.value)} 
+        autoComplete="off" 
+        spellCheck="false" 
+      />
+      {badUrl && <span className="err-t">URL ต้องขึ้นต้นด้วย https:// หรือ http://</span>}
+    </div>
+  );
+}
+
+const GUIDE = [
+  { title:'สร้าง Discord Application',
+    lead:'Rich Presence ต้องผูกกับ “Application” ของ Discord ก่อน ชื่อของ Application จะกลายเป็นข้อความ “Playing ชื่อ” บนโปรไฟล์ของคุณ',
+    body:(<>
+      <ol className="gl">
+        <li><span>เปิด <b>Discord Developer Portal</b> แล้วล็อกอินด้วยบัญชี Discord ของคุณ<br/>
+          <a className="btn sm" style={{marginTop:8}} href="https://discord.com/developers/applications" target="_blank" rel="noopener">เปิด Developer Portal ↗</a></span></li>
+        <li><span>กดปุ่ม <b>New Application</b> (มุมขวาบน)</span></li>
+        <li><span>ตั้งชื่อ — ชื่อนี้คือสิ่งที่คนอื่นจะเห็นหลังคำว่า Playing ติ๊กยอมรับข้อกำหนด แล้วกด <b>Create</b></span></li>
+      </ol>
+      <div className="gtip info">💡 ตั้งชื่อให้เรียบร้อยก่อนเริ่มใช้งาน เพราะชื่อ Application คือชื่อที่แสดงบนสถานะ ไม่ใช่ค่าที่ตั้งในหน้าเว็บนี้</div>
+    </>) },
+  { title:'คัดลอก Application ID',
+    lead:'เลขประจำ Application ที่เว็บนี้ต้องใช้ เพื่อบอก Discord ว่าจะแสดงสถานะของแอปไหน',
+    body:(<>
+      <ol className="gl">
+        <li><span>ในหน้า Application ที่เพิ่งสร้าง ไปที่เมนูซ้าย <b>General Information</b></span></li>
+        <li><span>หา <b>Application ID</b> (เลข 17–20 หลัก) แล้วกด <b>Copy</b></span></li>
+        <li><span>กลับมาที่หน้านี้ วางลงในช่อง <b>Application ID</b> ในการ์ด <code>Connection</code></span></li>
+      </ol>
+      <div className="gtip">⚠️ ใช้เฉพาะ <b>Application ID</b> เท่านั้น ห้ามนำ Client Secret หรือ Token ไปวางที่ไหน และไม่ต้องเชิญบอทเข้าเซิร์ฟเวอร์</div>
+    </>) },
+  { title:'อัปโหลดรูป (ไม่บังคับ)',
+    lead:'ถ้าต้องการรูปใหญ่/รูปเล็กบนสถานะ ให้อัปโหลดเป็น Art Asset แล้วอ้างอิงด้วยชื่อ (key) หรือจะใช้ลิงก์ https:// ตรง ๆ ก็ได้',
+    body:(<>
+      <ol className="gl">
+        <li><span>ที่เมนูซ้ายเลือก <b>Rich Presence</b> → <b>Art Assets</b></span></li>
+        <li><span>กด <b>Add Image(s)</b> แล้วเลือกรูป — Discord แนะนำขนาด <b>1024 × 1024</b> และเพิ่มได้สูงสุด 300 รูปต่อแอป</span></li>
+        <li><span>ตั้งชื่อ key ให้จำง่าย เช่น <code>logo</code> แล้วกด <b>Save Changes</b></span></li>
+        <li><span>นำชื่อ key ไปใส่ในช่อง <b>Large image key</b> หรือ <b>Small image key</b> ของหน้านี้</span></li>
+      </ol>
+      <div className="gtip">⏳ รูปที่เพิ่งอัปโหลดอาจต้องรอสักครู่ก่อนจะใช้งานได้ และชื่อ key ต้องตรงทุกตัวอักษร (ตัวพิมพ์เล็ก-ใหญ่มีผล)</div>
+      <div className="gtip info">👀 อยากลองดูหน้าตาก่อน? ใน Developer Portal มีเมนู <b>Rich Presence → Visualizer</b> ให้ทดลองจัดวาง ส่วนหน้านี้ก็มี <b>Live preview</b> ด้านขวาให้ดูสดอยู่แล้ว</div>
+    </>) },
+  { title:'วิธีใช้งานหน้านี้',
+    lead:'เปิดโปรแกรม Discord บนคอมพิวเตอร์ค้างไว้ แล้วทำตามลำดับนี้',
+    body:(<>
+      <ol className="gl">
+        <li><span><b>Connection</b> — ใส่ Application ID แล้วกด <b>▶ เริ่มใช้งาน</b> สถานะมุมขวาบนจะเปลี่ยนเป็น ออนไลน์</span></li>
+        <li><span><b>Presence</b> — <b>Details</b> คือบรรทัดแรก, <b>State</b> คือบรรทัดที่สอง (ไม่เกิน 128 ตัวอักษรทั้งคู่) ปุ่ม <b>ล้างค่า</b> จะล้างฟอร์มแต่เก็บ Application ID ไว้</span></li>
+        <li><span><b>Start time</b> — เปิด/ปิดเวลานับเดินหน้า เลือกวันที่เริ่มนับย้อนหลังได้ตั้งแต่ปี 1999 ถึงปัจจุบัน ปุ่ม <b>Now</b> = ตอนนี้, <b>Reset</b> = นับจากตอนเชื่อมต่อสำเร็จ และมีปุ่มลัดเลือกปีให้</span></li>
+        <li><span><b>Images</b> — ใส่ key ที่อัปโหลดไว้ หรือ URL รูป พร้อมข้อความ Tooltip ที่จะแสดงเมื่อเอาเมาส์ชี้</span></li>
+        <li><span><b>Buttons</b> — ได้สูงสุด 2 ปุ่ม ชื่อไม่เกิน 32 ตัวอักษร และ URL ต้องขึ้นต้นด้วย <code>https://</code> ต้องกรอกทั้งชื่อและ URL ปุ่มจึงจะแสดง</span></li>
+        <li><span>แก้ข้อมูลหลังออนไลน์แล้ว ให้กด <b>↻ อัปเดตสถานะ</b> เพื่อส่งค่าใหม่ไป Discord ส่วนการ์ด <b>Live preview</b> และ <b>Console</b> ด้านขวาใช้ดูตัวอย่างและตรวจสอบการทำงาน</span></li>
+        <li><span>กด <b>■ หยุด</b> เมื่อต้องการปิดสถานะ — ข้อมูลในฟอร์มถูก <b>บันทึกอัตโนมัติ</b> ปิดหน้าเว็บแล้วกลับมาค่าเดิมยังอยู่</span></li>
+      </ol>
+    </>) },
+  { title:'ข้อควรรู้ & แก้ปัญหา',
+    lead:'ถ้าสถานะไม่ขึ้นหรือรูปไม่แสดง ลองเช็กตามนี้',
+    body:(<>
+      <ul className="gl plain">
+        <li><span><b>สถานะไม่ขึ้น:</b> ต้องเปิดโปรแกรม <b>Discord Desktop</b> บนเครื่องเดียวกับที่รันโปรแกรมนี้ (Discord บนเว็บเบราว์เซอร์ใช้ไม่ได้) และเช็ก Application ID ว่าถูกต้อง</span></li>
+        <li><span><b>ยังไม่ขึ้นทั้งที่ออนไลน์:</b> ใน Discord ไปที่ User Settings → ส่วนความเป็นส่วนตัวของกิจกรรม (Activity Privacy) แล้วเปิดการแสดงกิจกรรมปัจจุบันเป็นสถานะ</span></li>
+        <li><span><b>รูปไม่แสดง:</b> ชื่อ key ไม่ตรง, รูปเพิ่งอัปโหลดและยังประมวลผลไม่เสร็จ หรือ URL เข้าถึงไม่ได้ — ช่องจะขึ้น ERR ในพรีวิวถ้าลิงก์รูปโหลดไม่สำเร็จ</span></li>
+        <li><span><b>มองไม่เห็นปุ่มบนโปรไฟล์ตัวเอง:</b> เป็นเรื่องปกติ ปุ่มจะแสดงให้ผู้อื่นเห็น ลองให้เพื่อนช่วยดูหรือใช้บัญชีอื่นตรวจสอบ</span></li>
+        <li><span><b>เวลาเดินผิด:</b> เช็กว่าเปิดสวิตช์ Elapsed time และเลือกวันเริ่มนับถูกต้อง แล้วกด ↻ อัปเดตสถานะ</span></li>
+      </ul>
+      <div className="gtip info">📖 เปิดคู่มือนี้ได้ทุกเมื่อจากปุ่ม <b>คู่มือ</b> มุมขวาบนของหน้า</div>
+    </>) },
+];
+
+function Guide({ step, setStep, onClose }) {
+  const g = GUIDE[step], last = step === GUIDE.length - 1;
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+        <div className="m-head">
+          <div className="m-top">
+            <span className="m-kicker">คู่มือการใช้งาน · ขั้นตอน {step + 1}/{GUIDE.length}</span>
+            <button className="m-x" onClick={onClose} aria-label="ปิด">✕</button>
+          </div>
+          <div className="m-steps">
+            {GUIDE.map((_, i) => <button key={i} className={i === step ? 'on' : i < step ? 'done' : ''} onClick={() => setStep(i)} aria-label={'ขั้นตอน ' + (i + 1)}/>)}
+          </div>
+        </div>
+        <div className="m-body" key={step}>
+          <h3>{g.title}</h3>
+          <p className="lead">{g.lead}</p>
+          {g.body}
+        </div>
+        <div className="m-foot">
+          <button className="btn sm" onClick={onClose}>{last ? 'ปิด' : 'ข้าม'}</button>
+          <div className="r">
+            <button className="btn sm" disabled={step === 0} onClick={() => setStep(step - 1)}>← ย้อนกลับ</button>
+            {last
+              ? <button className="btn sm primary" onClick={onClose}>เริ่มใช้งานเลย ✓</button>
+              : <button className="btn sm primary" onClick={() => setStep(step + 1)}>ถัดไป →</button>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActivationScreen({ lic, setLic, onShutdown, say }) {
+  const [keyInput, setKeyInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleActivate = async () => {
+    const k = keyInput.trim().toUpperCase();
+    if (!k) {
+      setErrorMsg('กรุณากรอก License Key');
+      return;
+    }
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      const res = await api('/api/license/activate', { key: k });
+      if (res.ok) {
+        setLic({ activated: true, hwid: res.hwid, key: res.key, message: res.message });
+        say('เปิดใช้งานสำเร็จเรียบร้อย!', 'ok');
+      } else {
+        setErrorMsg(res.error || 'ไม่สามารถเปิดใช้งานคีย์นี้ได้');
+      }
+    } catch (e) {
+      setErrorMsg('เชื่อมต่อเซิร์ฟเวอร์ตรวจสอบไม่สำเร็จ โปรดลองใหม่อีกครั้ง');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (lic && lic.hwid) {
+      navigator.clipboard.writeText(lic.hwid);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div style={{minHeight:'100vh', display:'grid', placeItems:'center', padding:'24px 16px', position:'relative', zIndex:10}}>
+      <div style={{width:'100%', maxWidth:480, background:'#12161f', border:'1px solid var(--border)', borderRadius:20, boxShadow:'0 30px 90px rgba(0,0,0,0.85)', overflow:'hidden'}}>
+        
+        {/* Header */}
+        <div style={{padding:'28px 24px 20px', textAlign:'center', borderBottom:'1px solid var(--border)', background:'linear-gradient(180deg, rgba(124,92,255,0.08) 0%, transparent 100%)'}}>
+          <img src="/logo.png" alt="Logo" style={{width:54, height:54, borderRadius:14, objectFit:'cover', boxShadow:'0 0 24px var(--accent-soft)', marginBottom:12}} />
+          <h2 style={{margin:0, fontSize:20, fontWeight:700, color:'#fff', letterSpacing:'-0.01em'}}>
+            J3A Discord Profile
+          </h2>
+          <div style={{fontSize:13, color:'var(--muted)', marginTop:4}}>
+            กรุณาเปิดใช้งาน License Key เพื่อเข้าสู่ระบบ
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{padding:'24px'}}>
+          
+          {/* HWID */}
+          <div style={{marginBottom:18}}>
+            <label style={{fontSize:12, color:'var(--muted)', fontWeight:600, display:'block', marginBottom:6}}>
+              รหัสประจำเครื่องของคุณ (Hardware ID - HWID)
+            </label>
+            <div style={{display:'flex', gap:8, alignItems:'center'}}>
+              <div style={{flex:1, background:'var(--input)', border:'1px solid var(--input-b)', borderRadius:10, padding:'10px 14px', fontFamily:'var(--mono)', fontSize:13, color:'var(--text)', letterSpacing:'0.04em'}}>
+                {lic && lic.hwid ? lic.hwid : 'กำลังตรวจสอบ...'}
+              </div>
+              <button className="btn sm" type="button" onClick={handleCopy} title="คัดลอกรหัสประจำเครื่อง">
+                {copied ? '✓ คัดลอกแล้ว' : '📋 คัดลอก'}
+              </button>
+            </div>
+          </div>
+
+          {/* Key Input */}
+          <div style={{marginBottom:18}}>
+            <label style={{fontSize:12, color:'var(--muted)', fontWeight:600, display:'block', marginBottom:6}}>
+              กรอก License Key ของคุณ
+            </label>
+            <input 
+              type="text" 
+              placeholder="เช่น J3A-XXXX-XXXX-XXXX" 
+              value={keyInput}
+              onChange={e => setKeyInput(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key === 'Enter' && handleActivate()}
+              style={{fontFamily:'var(--mono)', fontSize:14.5, letterSpacing:'0.06em', textTransform:'uppercase', padding:'12px 14px', textAlign:'center'}}
+              autoFocus 
+            />
+          </div>
+
+          {/* Error Message */}
+          {errorMsg && (
+            <div style={{background:'rgba(239,68,68,0.12)', border:'1px solid var(--err)', borderRadius:10, padding:'11px 14px', color:'#fca5a5', fontSize:13, marginBottom:18, display:'flex', alignItems:'center', gap:8}}>
+              <span style={{fontSize:16}}>⚠️</span>
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {/* Privacy Disclaimer */}
+          <div style={{background:'rgba(124,92,255,0.06)', border:'1px solid rgba(124,92,255,0.2)', borderRadius:12, padding:'12px 14px', fontSize:12, color:'var(--muted)', lineHeight:1.6, marginBottom:22}}>
+            <div style={{color:'var(--accent)', fontWeight:600, marginBottom:4, display:'flex', alignItems:'center', gap:6}}>
+              <span>🔒</span><span>ข้อตกลงและนโยบายสิทธิ์ (License Agreement)</span>
+            </div>
+            • 1 License Key ใช้ได้กับคอมพิวเตอร์ 1 เครื่องเท่านั้น (ผูกสิทธิ์ผ่านรหัสอุปกรณ์อัตโนมัติ)<br/>
+            • ไม่มีการเข้าถึงหรือจัดเก็บข้อมูลส่วนตัวใดๆ ในคอมพิวเตอร์ทั้งสิ้น
+          </div>
+
+          {/* Footer Actions */}
+          <div style={{display:'flex', gap:10, justifyContent:'space-between', alignItems:'center'}}>
+            <button className="btn danger sm" onClick={onShutdown}>✕ ปิดโปรแกรม</button>
+            <button className="btn primary" onClick={handleActivate} disabled={loading} style={{flex:1, padding:'12px 20px', fontWeight:700}}>
+              {loading ? 'กำลังตรวจสอบ…' : '🚀 ยืนยันและเปิดใช้งาน'}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LicenseInfoModal({ lic, onClose, onLogout }) {
+  return (
+    <div className="modal-bg" onClick={onClose} style={{zIndex:9999}}>
+      <div className="modal" style={{maxWidth:480, background:'#12161f'}} onClick={e => e.stopPropagation()}>
+        <div className="m-head" style={{borderBottom:'1px solid var(--border)', paddingBottom:16}}>
+          <div className="m-top">
+            <div style={{display:'flex', alignItems:'center', gap:10}}>
+              <div style={{width:36, height:36, borderRadius:10, background:'var(--accent-soft)', border:'1px solid var(--accent)', display:'grid', placeItems:'center', fontSize:18}}>
+                🛡️
+              </div>
+              <div>
+                <h3 style={{margin:0, fontSize:16, fontWeight:700, color:'#fff'}}>ข้อมูลสิทธิ์การใช้งาน (License Details)</h3>
+                <div style={{fontSize:12, color:'var(--muted)'}}>J3A Discord Profile</div>
+              </div>
+            </div>
+            <button className="m-x" onClick={onClose}>✕</button>
+          </div>
+        </div>
+
+        <div className="m-body" style={{padding:'20px 24px'}}>
+          <div style={{background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.25)', borderRadius:12, padding:'14px', marginBottom:16}}>
+            <div style={{display:'flex', alignItems:'center', gap:8, color:'var(--ok)', fontWeight:600, fontSize:14, marginBottom:6}}>
+              <span>✓</span><span>สถานะ: เปิดใช้งานสำเร็จเรียบร้อย</span>
+            </div>
+            <div style={{fontSize:13, color:'var(--text)', fontFamily:'var(--mono)'}}>
+              Key ปัจจุบัน: <b>{lic.key || 'ACTIVE'}</b>
+            </div>
+            <div style={{fontSize:12, color:'var(--muted)', marginTop:4, fontFamily:'var(--mono)'}}>
+              HWID: {lic.hwid}
+            </div>
+          </div>
+
+          <div style={{background:'rgba(124,92,255,0.05)', border:'1px solid var(--border)', borderRadius:10, padding:'12px 14px', fontSize:12, color:'var(--muted)', lineHeight:1.6, marginBottom:20}}>
+            💡 License Key นี้ถูกผูกกับเครื่องคอมพิวเตอร์นี้แล้ว หากต้องการออกจากระบบเพื่อใส่คีย์ใหม่ สามารถกดปุ่มด้านล่างได้ (สิทธิ์ยังคงผูกกับเครื่องนี้ เครื่องอื่นจะไม่สามารถนำไปใช้ได้)
+          </div>
+
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <button className="btn sm" style={{color:'var(--err)', borderColor:'rgba(239,68,68,0.3)'}} onClick={onLogout}>
+              🚪 ออกจากระบบ (ลบสิทธิ์บนเครื่องนี้)
+            </button>
+            <button className="btn primary sm" onClick={onClose}>
+              ตกลง
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VersionModal({ verInfo, checking, updating, onCheckAgain, onAutoUpdate, onClose }) {
+  const hasUpdate = verInfo && verInfo.has_update;
+  const currentV = (verInfo && verInfo.current_version) || '1.2.0';
+  const latestV = (verInfo && verInfo.latest_version) || currentV;
+  const changelog = (verInfo && Array.isArray(verInfo.changelog) && verInfo.changelog.length > 0)
+    ? verInfo.changelog
+    : [
+        'เพิ่มระบบ Priority Mode (Competing) แสดงอยู่บนสุดของหน้าโปรไฟล์เสมอ',
+        'ซิงค์รูปไอคอนแอปและ Art Assets ล่าสุดจาก Discord อัตโนมัติ',
+        'เพิ่มปุ่มตรวจสอบเวอร์ชัน & อัปเดตอัตโนมัติในคลิกเดียว',
+        'เพิ่มปุ่มถอนการติดตั้งโปรแกรม (Uninstaller) แบบครบวงจร',
+      ];
+
+  return (
+    <div className="modal-bg" onClick={onClose} style={{zIndex:9999}}>
+      <div className="modal" style={{maxWidth:520, background:'#12161f'}} onClick={e => e.stopPropagation()}>
+        <div className="m-head" style={{borderBottom:'1px solid var(--border)', paddingBottom:16}}>
+          <div className="m-top">
+            <div style={{display:'flex', alignItems:'center', gap:10}}>
+              <div style={{width:38, height:38, borderRadius:10, background:'var(--accent-soft)', border:'1px solid var(--accent)', display:'grid', placeItems:'center', fontSize:18}}>
+                🔄
+              </div>
+              <div>
+                <h3 style={{margin:0, fontSize:16, fontWeight:700, color:'#fff'}}>ตรวจสอบเวอร์ชัน & อัปเดตระบบ</h3>
+                <div style={{fontSize:12, color:'var(--muted)'}}>
+                  J3A Discord Profile · ตรวจสอบล่าสุด {verInfo?.checked_at || 'เมื่อสักครู่'}
+                </div>
+              </div>
+            </div>
+            <button className="m-x" onClick={onClose}>✕</button>
+          </div>
+        </div>
+
+        <div className="m-body" style={{padding:'20px 24px'}}>
+          <div style={{
+            background: hasUpdate ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.08)',
+            border: hasUpdate ? '1px solid rgba(245,158,11,0.35)' : '1px solid rgba(34,197,94,0.28)',
+            borderRadius:12,
+            padding:'14px 16px',
+            marginBottom:16,
+          }}>
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8}}>
+              <div style={{display:'flex', alignItems:'center', gap:8, fontWeight:700, fontSize:14.5, color: hasUpdate ? 'var(--warn)' : 'var(--ok)'}}>
+                <span>{hasUpdate ? '🎉 พบเวอร์ชันใหม่พร้อมอัปเดต!' : '✓ คุณกำลังใช้งานเวอร์ชันล่าสุดแล้ว'}</span>
+              </div>
+              <span style={{fontSize:11.5, padding:'3px 8px', borderRadius:99, background:'rgba(255,255,255,0.07)', color:'var(--text)', fontFamily:'var(--mono)'}}>
+                v{latestV}
+              </span>
+            </div>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, fontSize:12.5, color:'var(--muted)', fontFamily:'var(--mono)'}}>
+              <div>เวอร์ชันปัจจุบัน: <b style={{color:'#fff'}}>v{currentV}</b></div>
+              <div>เวอร์ชันล่าสุด: <b style={{color: hasUpdate ? 'var(--warn)' : 'var(--ok)'}}>v{latestV}</b></div>
+            </div>
+          </div>
+
+          <div style={{marginBottom:18}}>
+            <div style={{fontSize:12.5, fontWeight:700, color:'var(--text)', marginBottom:8}}>
+              📋 รายการอัปเดตล่าสุด (v{latestV} · {verInfo?.release_date || '2026-10-06'}):
+            </div>
+            <ul className="gl plain" style={{margin:0}}>
+              {changelog.map((item, idx) => (
+                <li key={idx} style={{padding:'7px 11px', fontSize:12.5}}>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:8, flexWrap:'wrap'}}>
+            <div style={{display:'flex', gap:8}}>
+              <button className="btn sm" onClick={onCheckAgain} disabled={checking || updating}>
+                {checking ? '⏳ กำลังเช็ค…' : '🔄 เช็คอีกครั้ง'}
+              </button>
+              {verInfo?.drive_url && (
+                <a className="btn sm" href={verInfo.drive_url} target="_blank" rel="noopener" style={{textDecoration:'none'}}>
+                  ☁️ โหลดผ่าน Google Drive ↗
+                </a>
+              )}
+            </div>
+            <div style={{display:'flex', gap:8}}>
+              {hasUpdate ? (
+                <button className="btn primary sm" onClick={onAutoUpdate} disabled={updating}>
+                  {updating ? '⏳ กำลังดาวน์โหลดและอัปเดต…' : `⚡ อัปเดตเป็น v${latestV} ทันที`}
+                </button>
+              ) : (
+                <button className="btn primary sm" onClick={onClose}>
+                  ตกลง
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UninstallModal({ onConfirm, onClose, loading }) {
+  return (
+    <div className="modal-bg" onClick={onClose} style={{zIndex:9999}}>
+      <div className="modal" style={{maxWidth:480, background:'#12161f'}} onClick={e => e.stopPropagation()}>
+        <div className="m-head" style={{borderBottom:'1px solid var(--border)', paddingBottom:16}}>
+          <div className="m-top">
+            <div style={{display:'flex', alignItems:'center', gap:10}}>
+              <div style={{width:38, height:38, borderRadius:10, background:'rgba(239,68,68,0.14)', border:'1px solid var(--err)', display:'grid', placeItems:'center', fontSize:18}}>
+                🗑️
+              </div>
+              <div>
+                <h3 style={{margin:0, fontSize:16, fontWeight:700, color:'#fff'}}>ถอนการติดตั้งโปรแกรม (Uninstall)</h3>
+                <div style={{fontSize:12, color:'var(--muted)'}}>J3A Discord Profile</div>
+              </div>
+            </div>
+            <button className="m-x" onClick={onClose}>✕</button>
+          </div>
+        </div>
+
+        <div className="m-body" style={{padding:'20px 24px'}}>
+          <div style={{background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:12, padding:'14px', marginBottom:16, fontSize:13, color:'#fca5a5', lineHeight:1.6}}>
+            <b>⚠️ ยืนยันการถอนการติดตั้ง J3A Discord Profile ใช่หรือไม่?</b><br/>
+            ระบบจะดำเนินการลบรายการต่อไปนี้ออกจากคอมพิวเตอร์ของคุณโดยอัตโนมัติ:
+            <ul style={{margin:'8px 0 0 18px', padding:0, color:'var(--text)', fontSize:12.5}}>
+              <li>ตัดการเชื่อมต่อสถานะบน Discord ทันที</li>
+              <li>ลบไอคอนทางลัด <b>J3A Discord Profile</b> บนหน้าจอ Desktop</li>
+              <li>ลบไฟล์ตั้งค่าและแคชทั้งหมดใน <code>%APPDATA%\J3ADiscordProfile</code></li>
+              <li>ลบตัวโปรแกรม <code>J3ADiscordProfile.exe</code> ออกจากโฟลเดอร์ที่ติดตั้ง</li>
+            </ul>
+          </div>
+
+          <div style={{background:'rgba(124,92,255,0.06)', border:'1px solid var(--border)', borderRadius:10, padding:'11px 14px', fontSize:12, color:'var(--muted)', lineHeight:1.55, marginBottom:20}}>
+            🔒 <b>หมายเหตุเรื่อง License Key:</b> สิทธิ์คีย์ของคุณยังคงผูกกับรหัสเครื่อง (HWID) นี้บนเซิร์ฟเวอร์ หากคุณดาวน์โหลดกลับมาติดตั้งใหม่ในเครื่องเดิม จะสามารถใช้คีย์เดิมเปิดใช้งานได้ทันทีครับ
+          </div>
+
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:10}}>
+            <button className="btn sm" onClick={onClose} disabled={loading}>
+              ยกเลิก
+            </button>
+            <button className="btn danger sm" onClick={onConfirm} disabled={loading} style={{fontWeight:700, padding:'9px 16px'}}>
+              {loading ? 'กำลังถอนการติดตั้ง…' : '🗑️ ยืนยันถอนการติดตั้งทันที'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [form, setForm] = useState(EMPTY);
+  const [showTime, setShowTime] = useState(true);
+  const [startVal, setStartVal] = useState('');
+  const [srv, setSrv] = useState({ state:'off', start_ts:null, now:Math.floor(Date.now()/1000), min_ts:915148800 });
+  const [logs, setLogs] = useState([]);
+  const [toast, setToast] = useState(null);
+  const [tick, setTick] = useState(Date.now());
+
+  // License state
+  const [lic, setLic] = useState({ activated: false, hwid: '', key: '', message: '' });
+  const [licLoading, setLicLoading] = useState(true);
+  const [infoModal, setInfoModal] = useState(false);
+
+  // Version & Uninstall state
+  const [verModal, setVerModal] = useState(false);
+  const [verInfo, setVerInfo] = useState({ current_version: '1.2.0', latest_version: '1.2.0', has_update: false });
+  const [verChecking, setVerChecking] = useState(false);
+  const [verUpdating, setVerUpdating] = useState(false);
+  const [uninstallModal, setUninstallModal] = useState(false);
+  const [uninstalling, setUninstalling] = useState(false);
+
+  // Guide: auto-open on first visit, reopen any time from the header button
+  const [guide, setGuide] = useState(false);
+  const [gStep, setGStep] = useState(0);
+  const openGuide = () => { setGStep(0); setGuide(true); };
+  const closeGuide = () => { setGuide(false); try { localStorage.setItem('rpc_guide_seen', '1'); } catch (e) {} };
+  useEffect(() => {
+    let seen = false;
+    try { seen = !!localStorage.getItem('rpc_guide_seen'); } catch (e) {}
+    if (!seen) openGuide();
+  }, []);
+  useEffect(() => {
+    if (!guide) return;
+    const k = e => {
+      if (e.key === 'Escape') closeGuide();
+      else if (e.key === 'ArrowRight') setGStep(s => Math.min(s + 1, GUIDE.length - 1));
+      else if (e.key === 'ArrowLeft') setGStep(s => Math.max(s - 1, 0));
+    };
+    addEventListener('keydown', k);
+    return () => removeEventListener('keydown', k);
+  }, [guide]);
+  
+  const [largeErr, setLargeErr] = useState(false);
+  const [smallErr, setSmallErr] = useState(false);
+  const [discordMeta, setDiscordMeta] = useState({ app_name: '', app_icon: '', assets: [] });
+
+  const fetchDiscordMeta = (cid, force = false) => {
+    const cleanCid = (cid || '').trim();
+    if (cleanCid.length >= 17) {
+      api(`/api/discord/assets?client_id=${cleanCid}${force ? '&force=1' : ''}`).then(r => {
+        if (r && r.ok) {
+          setDiscordMeta({
+            app_name: r.app_name || '',
+            app_icon: r.app_icon || '',
+            assets: Array.isArray(r.assets) ? r.assets : [],
+          });
+          setLargeErr(false);
+          setSmallErr(false);
+        }
+      }).catch(() => {});
+    } else {
+      setDiscordMeta({ app_name: '', app_icon: '', assets: [] });
+    }
+  };
+
+  useEffect(() => {
+    fetchDiscordMeta(form.client_id, false);
+  }, [form.client_id]);
+
+  const seq = useRef(0), loaded = useRef(false), consoleRef = useRef(null);
+
+  const online = srv.state === 'online', busy = srv.state !== 'off';
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const say = (msg, kind='err') => { setToast({ msg, kind }); setTimeout(() => setToast(null), 3200); };
+  const startTs = () => startVal ? Math.floor(new Date(startVal).getTime()/1000) : null;
+  const body = () => ({ form, show_time:showTime, start_ts:startTs() });
+
+  useEffect(() => { setLargeErr(false); }, [form.large_image]);
+  useEffect(() => { setSmallErr(false); }, [form.small_image]);
+
+  useEffect(() => {
+    let alive = true;
+    const poll = async () => {
+      try {
+        const r = await api('/api/state?since=' + seq.current);
+        if (!alive) return;
+        setSrv(r);
+        if (r.license) {
+          setLic(r.license);
+        }
+        if (!loaded.current && (!r.license || r.license.activated)) {
+          loaded.current = true;
+          const savedForm = { ...EMPTY, ...r.saved };
+          if (!savedForm.activity_type) savedForm.activity_type = 'competing';
+          setForm(savedForm);
+          setShowTime(r.saved_show_time ?? true);
+          if (r.saved_start_ts) setStartVal(toLocalInput(r.saved_start_ts));
+        }
+        if (r.logs && r.logs.length) { 
+          seq.current = r.logs[r.logs.length-1].id; 
+          setLogs(l => [...l, ...r.logs].slice(-300)); 
+        }
+      } catch (e) {}
+    };
+    poll(); 
+    const id = setInterval(poll, 1000);
+    const clk = setInterval(() => setTick(Date.now()), 1000);
+    return () => { alive = false; clearInterval(id); clearInterval(clk); };
+  }, []);
+
+  useEffect(() => {
+    api('/api/license/status').then(r => {
+      if (r && r.hwid) {
+        setLic(r);
+      }
+    }).catch(() => {})
+      .finally(() => setLicLoading(false));
+  }, []);
+
+  const logoutLicense = async () => {
+    if (confirm('คุณต้องการออกจากระบบและลบสิทธิ์บนเครื่องนี้ใช่หรือไม่?\n\n⚠️ หมายเหตุ:\n• โปรแกรมจะกลับไปยังหน้ากรอก License Key ใหม่\n• เครื่องคอมพิวเตอร์อื่นจะไม่สามารถนำคีย์นี้ไปใช้งานได้\n(สิทธิ์ยังคงผูกกับรหัสเครื่องนี้เพื่อความปลอดภัย)')) {
+      try {
+        await api('/api/license/logout', {});
+      } catch (e) {}
+      loaded.current = false;
+      setLic({ activated: false, hwid: lic.hwid, key: '', message: 'ยังไม่ได้เปิดใช้งาน' });
+      setInfoModal(false);
+      say('ออกจากระบบเรียบร้อยแล้ว', 'ok');
+    }
+  };
+
+  useEffect(() => { 
+    const el = consoleRef.current; 
+    if (el) el.scrollTop = el.scrollHeight; 
+  }, [logs]);
+
+  useEffect(() => {
+    if (!loaded.current || !lic.activated) return;
+    const id = setTimeout(() => api('/api/save', body()), 600);
+    return () => clearTimeout(id);
+  }, [form, showTime, startVal, lic.activated]);
+
+  const start = async () => { 
+    if (!form.client_id.trim()) return say('กรุณากรอก Application ID');
+    fetchDiscordMeta(form.client_id, true);
+    const r = await api('/api/start', body()); 
+    if (!r.ok) say(r.error || 'เริ่มไม่สำเร็จ'); 
+  };
+  const stop = async () => { 
+    await api('/api/stop', {}); 
+    say('หยุด Presence แล้ว', 'ok'); 
+  };
+  const update = async () => { 
+    fetchDiscordMeta(form.client_id, true);
+    const r = await api('/api/update', body()); 
+    r.ok ? say('ส่งอัปเดตแล้ว', 'ok') : say(r.error || 'อัปเดตไม่สำเร็จ'); 
+  };
+
+  const clearForm = () => {
+    if (confirm('คุณต้องการล้างข้อความทั้งหมดในฟอร์มใช่หรือไม่?')) {
+      setForm({ ...EMPTY, client_id: form.client_id });
+      say('ล้างข้อมูลเรียบร้อย', 'ok');
+    }
+  };
+
+  const nowSec = Math.floor(tick/1000);
+  const setNow = () => setStartVal(toLocalInput(nowSec));
+  const maxVal = toLocalInput(nowSec), minVal = '1999-01-01T00:00';
+  const presets = [1999, 2015, 2020, 2024, 2026];
+
+  const effStart = online ? srv.start_ts : (showTime ? (startTs() || nowSec) : null);
+  const el = effStart ? elapsedText(nowSec - effStart) : null;
+  const small = form.small_image.trim(), large = form.large_image.trim();
+  const btns = [1,2].filter(i => form[`btn${i}_text`].trim() && form[`btn${i}_url`].trim());
+  const stateTxt = { off:'ออฟไลน์', connecting:'กำลังเชื่อมต่อ…', online:'ออนไลน์' }[srv.state] || 'ออฟไลน์';
+
+  const discordAssets = discordMeta.assets || [];
+
+  const resolveAssetUrl = (key, isLarge = false) => {
+    const k = (key || '').trim();
+    if (!k || k === '@app_icon') {
+      if (!isLarge && !k) return null;
+      if (discordMeta.app_icon) return discordMeta.app_icon;
+      if (discordAssets.length > 0) return discordAssets[discordAssets.length - 1].url;
+      return null;
+    }
+    if (k.startsWith('http://') || k.startsWith('https://')) return k;
+    const found = discordAssets.find(a => a.name.toLowerCase() === k.toLowerCase() || a.id === k);
+    if (found) return found.url;
+    return null;
+  };
+
+  const largeImgUrl = resolveAssetUrl(large, true);
+  const smallImgUrl = resolveAssetUrl(small, false);
+
+  const shutdownApp = async () => {
+    if (confirm('คุณต้องการปิดโปรแกรม J3A Discord Profile ใช่หรือไม่?')) {
+      try { await api('/api/shutdown', {}); } catch (e) {}
+      window.close();
+    }
+  };
+
+  const checkVersion = async (openModal = true) => {
+    setVerChecking(true);
+    if (openModal) setVerModal(true);
+    try {
+      const r = await api('/api/version/check');
+      if (r && r.ok) {
+        setVerInfo(r);
+        if (openModal) {
+          say(r.has_update ? `พบเวอร์ชันใหม่ v${r.latest_version}!` : `คุณใช้เวอร์ชันล่าสุดแล้ว (v${r.current_version})`, 'ok');
+        }
+      }
+    } catch (e) {
+      if (openModal) say('ไม่สามารถตรวจสอบเวอร์ชันได้ในขณะนี้', 'err');
+    } finally {
+      setVerChecking(false);
+    }
+  };
+
+  useEffect(() => {
+    checkVersion(false);
+  }, []);
+
+  const autoUpdateApp = async () => {
+    setVerUpdating(true);
+    try {
+      const r = await api('/api/version/update', { download_url: verInfo?.download_url });
+      if (r && r.ok) {
+        say(r.message || 'กำลังติดตั้งอัปเดตและรีสตาร์ทโปรแกรม…', 'ok');
+        setTimeout(() => window.close(), 1500);
+      } else {
+        say(r?.error || 'เปิดลิงก์ดาวน์โหลดเวอร์ชันใหม่แทน', 'err');
+        if (r?.open_url) window.open(r.open_url, '_blank');
+      }
+    } catch (e) {
+      say('เกิดข้อผิดพลาดในการอัปเดตอัตโนมัติ', 'err');
+      if (verInfo?.drive_url) window.open(verInfo.drive_url, '_blank');
+    } finally {
+      setVerUpdating(false);
+    }
+  };
+
+  const confirmUninstall = async () => {
+    setUninstalling(true);
+    try {
+      const r = await api('/api/uninstall', {});
+      if (r && r.ok) {
+        say('กำลังถอนการติดตั้งและล้างข้อมูล…', 'ok');
+        setTimeout(() => window.close(), 1000);
+      }
+    } catch (e) {
+      setTimeout(() => window.close(), 1000);
+    }
+  };
+
+  if (licLoading) {
+    return (
+      <div style={{minHeight:'100vh', display:'grid', placeItems:'center', color:'var(--muted)', textAlign:'center', position:'relative', zIndex:10}}>
+        <div>
+          <img src="/logo.png" alt="Logo" style={{width:54, height:54, borderRadius:14, marginBottom:16}} />
+          <div style={{fontSize:14, fontFamily:'var(--sans)'}}>กำลังตรวจสอบสิทธิ์การใช้งาน…</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!lic.activated) {
+    return (
+      <>
+        <ActivationScreen lic={lic} setLic={setLic} onShutdown={shutdownApp} say={say} />
+        {toast && <div className={'toast ' + toast.kind}>{toast.msg}</div>}
+      </>
+    );
+  }
+
+  return (
+  <div className="wrap">
+    <header>
+      <div className="brand">
+        <img src="/logo.png" alt="J3A Logo" style={{width:42, height:42, borderRadius:12, objectFit:'cover', boxShadow:'0 0 20px var(--accent-soft)'}} />
+        <div>
+          <div style={{display:'flex', alignItems:'center', gap:8}}>
+            <h1>J3A Discord Profile</h1>
+            <span style={{fontSize:11, fontFamily:'var(--mono)', padding:'2px 7px', borderRadius:99, background:'var(--accent-soft)', color:'var(--accent)', fontWeight:600}}>
+              v{verInfo?.current_version || '1.2.0'}
+            </span>
+          </div>
+          <div className="sub">Web Control Panel · Discord Rich Presence</div>
+        </div>
+      </div>
+      <div className="hdr-r">
+        <div className="pill" style={{cursor:'pointer', background:'rgba(34,197,94,0.08)', borderColor:'rgba(34,197,94,0.3)'}} onClick={() => setInfoModal(true)} title="คลิกเพื่อดูรายละเอียดสิทธิ์ License">
+          <span className="dot online" style={{background:'var(--ok)'}}/>
+          สิทธิ์: Active
+        </div>
+        <button className="guide-btn" style={{borderColor: verInfo?.has_update ? 'var(--warn)' : 'var(--border)', background: verInfo?.has_update ? 'rgba(245,158,11,0.12)' : 'var(--input)'}} onClick={() => checkVersion(true)} title="ตรวจสอบเวอร์ชันล่าสุดและอัปเดต">
+          {verInfo?.has_update ? `🎉 อัปเดต v${verInfo.latest_version}` : `🔄 เช็คเวอร์ชัน (v${verInfo?.current_version || '1.2.0'})`}
+        </button>
+        <button className="guide-btn" onClick={openGuide}>📖 คู่มือ</button>
+        <button className="guide-btn" style={{borderColor:'rgba(124,92,255,0.4)', background:'rgba(124,92,255,0.1)'}} onClick={logoutLicense} title="ออกจากระบบเพื่อสลับคีย์">🚪 ออกจากระบบ</button>
+        <button className="guide-btn" style={{borderColor:'rgba(239,68,68,0.45)', color:'#fca5a5', background:'rgba(239,68,68,0.08)'}} onClick={() => setUninstallModal(true)} title="ถอนการติดตั้งโปรแกรมและล้างข้อมูล">🗑️ ถอนการติดตั้ง</button>
+        <button className="guide-btn" style={{borderColor:'var(--err)', color:'var(--err)', background:'rgba(239,68,68,0.08)'}} onClick={shutdownApp}>✕ ปิดโปรแกรม</button>
+        <div className="pill"><span className={'dot ' + srv.state}/>{stateTxt}</div>
+      </div>
+    </header>
+
+    <div className="grid">
+      <div className="col">
+        <div className="card">
+          <h2><span className="title-wrap">Connection</span></h2>
+          <Field label="Application ID" k="client_id" form={form} set={set} placeholder="เลข 17–20 หลักจาก Developer Portal" disabled={busy}/>
+          <div className="actions">
+            {!busy && <button className="btn primary" onClick={start}>▶ เริ่มใช้งาน</button>}
+            {busy && <button className="btn danger" onClick={stop}>{online ? '■ หยุด' : '✕ ยกเลิก'}</button>}
+            <button className="btn" disabled={!online} onClick={update}>↻ อัปเดตสถานะ</button>
+          </div>
+        </div>
+
+        <div className="card">
+          <h2>
+            <span className="title-wrap">Presence</span>
+            <button className="btn sm" onClick={clearForm} title="ล้างค่าในแบบฟอร์ม">ล้างค่า</button>
+          </h2>
+          <div className="field" style={{marginBottom:14}}>
+            <label>
+              <span>📌 ลำดับการแสดงผลบนหน้าโปรไฟล์ (Priority Mode)</span>
+            </label>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginTop:4}}>
+              {[
+                { id:'competing', icon:'🏆', title:'อยู่บนสุดเสมอ (Competing)', desc:'แสดงเหนือทุกเกมที่เล่น 100% (แนะนำ)' },
+                { id:'playing',   icon:'🎮', title:'กำลังเล่นเกม (Playing)',   desc:'โหมดปกติ (อาจสลับกับเกมอื่นที่เปิด)' },
+                { id:'listening', icon:'🎧', title:'กำลังฟัง (Listening)',     desc:'แสดงสถานะกำลังฟัง...' },
+                { id:'watching',  icon:'📺', title:'กำลังดู (Watching)',       desc:'แสดงสถานะกำลังดู...' },
+              ].map(m => {
+                const active = (form.activity_type || 'competing') === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={async () => {
+                      const nextForm = { ...form, activity_type: m.id };
+                      setForm(nextForm);
+                      if (online) {
+                        const r = await api('/api/update', { form: nextForm, show_time: showTime, start_ts: startTs() });
+                        if (r.ok) say(`เปลี่ยนเป็นโหมด "${m.title}" แล้ว`, 'ok');
+                      }
+                    }}
+                    style={{
+                      textAlign:'left',
+                      padding:'10px 12px',
+                      borderRadius:10,
+                      border: active ? '1px solid var(--accent)' : '1px solid var(--border)',
+                      background: active ? 'var(--accent-soft)' : 'var(--input)',
+                      color:'var(--text)',
+                      cursor:'pointer',
+                      transition:'all .15s',
+                    }}
+                  >
+                    <div style={{fontSize:13, fontWeight:700, display:'flex', alignItems:'center', gap:6, color: active ? '#fff' : 'var(--text)'}}>
+                      <span>{m.icon}</span>
+                      <span>{m.title}</span>
+                    </div>
+                    <div style={{fontSize:11, color:'var(--muted)', marginTop:3}}>{m.desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <Field label="Details (บรรทัดแรก)" k="details" form={form} set={set} max={128} placeholder="เช่น กำลังสำรวจโลกกว้าง..."/>
+          <Field label="State (บรรทัดที่สอง)" k="state" form={form} set={set} max={128} placeholder="เช่น ปาร์ตี้: 1 จาก 4 คน"/>
+        </div>
+
+        <div className="card">
+          <h2><span className="title-wrap">Start time</span></h2>
+          <div className="switch">
+            <div>แสดงเวลานับเดินหน้า (Elapsed time)<small>เลือกเวลาเริ่มย้อนหลังได้ตั้งแต่ปี 1999 ถึงปัจจุบัน</small></div>
+            <button className={'tg' + (showTime ? ' on' : '')} onClick={() => setShowTime(!showTime)} aria-label="toggle elapsed"/>
+          </div>
+          <div className="field">
+            <label>วันที่และเวลาเริ่มนับ</label>
+            <input type="datetime-local" value={startVal} min={minVal} max={maxVal} disabled={!showTime}
+                   onChange={e => setStartVal(e.target.value)} />
+          </div>
+          <div className="chips">
+            <button className="btn sm" disabled={!showTime} onClick={setNow}>Now</button>
+            <button className="btn sm" disabled={!showTime} onClick={() => setStartVal('')}>Reset</button>
+            {presets.map(y => <button key={y} className="btn sm" disabled={!showTime}
+                onClick={() => setStartVal(`${y}-01-01T00:00`)}>1 ม.ค. {y}</button>)}
+          </div>
+          <div className="hint">
+            {startVal ? 'จะใช้เวลาที่เลือกเป็นจุดเริ่มนับ' : 'Reset = เริ่มนับจากตอนเชื่อมต่อสำเร็จ (ตามเวลาจริง)'}
+            {online && ' · หากเปลี่ยนค่า กรุณากด “อัปเดตสถานะ” เพื่อส่งข้อมูลไปยัง Discord'}
+          </div>
+        </div>
+
+        <div className="card">
+          <h2>
+            <span className="title-wrap">Images</span>
+            <button className="btn sm" type="button" onClick={() => { fetchDiscordMeta(form.client_id, true); say('ซิงค์รูปภาพล่าสุดจาก Discord แล้ว', 'ok'); }} title="ดึงรูปไอคอนและ Art Assets ล่าสุดจาก Discord">🔄 ซิงค์รูปจาก Discord</button>
+          </h2>
+
+          {(discordMeta.app_icon || discordAssets.length > 0) && (
+            <div style={{marginBottom:14, padding:'10px 14px', background:'rgba(124,92,255,0.08)', border:'1px solid rgba(124,92,255,0.25)', borderRadius:12}}>
+              <div style={{fontSize:12, color:'var(--text)', fontWeight:600, marginBottom:8, display:'flex', alignItems:'center', gap:6}}>
+                <span>✨</span><span>รูปภาพที่ตรวจพบใน Application {discordMeta.app_name ? `"${discordMeta.app_name}"` : 'ของคุณ'} — คลิกเพื่อเลือกใช้ทันที:</span>
+              </div>
+              <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+                {discordMeta.app_icon && (
+                  <button type="button" className="btn sm" style={{display:'inline-flex', alignItems:'center', gap:6, padding:'4px 10px', background: (!form.large_image || form.large_image === '@app_icon') ? 'var(--accent-soft)' : 'var(--input)', borderColor: (!form.large_image || form.large_image === '@app_icon') ? 'var(--accent)' : 'var(--border)'}}
+                          onClick={() => { set('large_image', ''); say('เลือกใช้ไอคอนแอปหลัก (อัตโนมัติ)', 'ok'); }}>
+                    <img src={discordMeta.app_icon} style={{width:20, height:20, borderRadius:4, objectFit:'cover'}} alt="App Icon"/>
+                    <span>ไอคอนแอปหลัก (อัตโนมัติ)</span>
+                  </button>
+                )}
+                {discordAssets.map(a => (
+                  <button key={a.id} type="button" className="btn sm" style={{display:'inline-flex', alignItems:'center', gap:6, padding:'4px 10px', background: form.large_image === a.name ? 'var(--accent-soft)' : 'var(--input)', borderColor: form.large_image === a.name ? 'var(--accent)' : 'var(--border)'}}
+                          onClick={() => { set('large_image', a.name); say(`เลือกรูปใหญ่: ${a.name}`, 'ok'); }}>
+                    <img src={a.url} style={{width:20, height:20, borderRadius:4, objectFit:'cover'}} alt={a.name}/>
+                    <span>{a.name}</span>
+                  </button>
+                ))}
+              </div>
+              <div style={{fontSize:11.5, color:'var(--muted)', marginTop:8}}>
+                💡 หากเว้นว่างช่องรูปใหญ่ โปรแกรมจะส่งรูปไอคอนแอปปัจจุบันไปแสดงบน Discord ให้อัตโนมัติทันที (ไม่ติดรูปแคชเก่า)
+              </div>
+            </div>
+          )}
+
+          <div className="row">
+            <Field label="Large image key / URL (เว้นว่าง = ใช้ไอคอนแอปอัตโนมัติ)" k="large_image" form={form} set={set} placeholder="เว้นว่าง หรือใส่ชื่อ Asset เช่น duck / https://..."/>
+            <Field label="Large image text (Tooltip)" k="large_text" form={form} set={set} placeholder="ข้อความเมื่อชี้รูปใหญ่"/>
+            <Field label="Small image key / URL" k="small_image" form={form} set={set} placeholder="เช่น duck หรือ https://..."/>
+            <Field label="Small image text (Tooltip)" k="small_text" form={form} set={set} placeholder="ข้อความเมื่อชี้รูปเล็ก"/>
+          </div>
+
+          {(form.large_image.includes('cdn.discordapp.com/attachments') || form.large_image.includes('media.discordapp.net/attachments')) && (
+            <div className="err-t" style={{marginTop:8, display:'block', fontSize:12}}>
+              ⚠️ ลิงก์ที่มาจากห้องแชท Discord (attachments) มักหมดอายุและติดระบบความปลอดภัยของ Discord แนะนำให้ใช้ชื่อ Art Asset (เช่น duck) หรืออัปโหลดที่ imgur.com แทนครับ
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <h2>
+            <span className="title-wrap">Buttons (ปุ่มกด & ลิงก์ปลายทาง - ไม่บังคับ)</span>
+            <button className="btn sm" type="button" onClick={() => { set('btn1_text',''); set('btn1_url',''); set('btn2_text',''); set('btn2_url',''); }} title="ล้างค่าปุ่มทั้งหมด">ล้างปุ่ม</button>
+          </h2>
+          <div className="hint" style={{marginTop:-6, marginBottom:14}}>
+            (ไม่บังคับ) เพิ่มปุ่มบนการ์ด Discord ได้สูงสุด 2 ปุ่ม เมื่อผู้อื่นกดดูโปรไฟล์จะเห็นปุ่มและคลิกลิงก์ได้ทันที (หากไม่ต้องการใส่ปุ่ม สามารถปล่อยว่างไว้ได้เลยครับ)
+          </div>
+          <div className="chips" style={{marginBottom:14}}>
+            <span style={{fontSize:12, color:'var(--muted)', display:'flex', alignItems:'center'}}>แม่แบบปุ่มด่วน:</span>
+            {[
+              { t1: 'Join Discord', t2: 'Join Server' },
+              { t1: 'เข้าดิสคอร์ด', t2: 'เว็บไซต์' },
+              { t1: 'เว็บไซต์', t2: 'YouTube' }
+            ].map((p, idx) => (
+              <button key={idx} className="btn sm" onClick={() => {
+                set('btn1_text', p.t1);
+                set('btn2_text', p.t2);
+              }}>+ {p.t1} & {p.t2}</button>
+            ))}
+          </div>
+          {[1,2].map(i => (
+            <div key={i} style={{marginBottom: i === 1 ? 16 : 0, paddingBottom: i === 1 ? 16 : 0, borderBottom: i === 1 ? '1px dashed var(--border)' : 'none'}}>
+              <div style={{fontWeight:600, fontSize:13, marginBottom:8, color:'var(--text)', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                <span>🔘 ปุ่มที่ {i} {form[`btn${i}_text`] ? `(${form[`btn${i}_text`]})` : ''}</span>
+                {form[`btn${i}_url`] && isValidUrl(form[`btn${i}_url`]) && (
+                  <a href={form[`btn${i}_url`]} target="_blank" rel="noopener" style={{fontSize:12, color:'var(--accent)', textDecoration:'none', fontWeight:500}}>
+                    🔗 ทดสอบเปิดลิงก์ ↗
+                  </a>
+                )}
+              </div>
+              <div className="row">
+                <Field label={`ชื่อข้อความบนปุ่ม`} k={`btn${i}_text`} form={form} set={set} max={32} placeholder={i === 1 ? "เช่น Join Discord" : "เช่น Join Server"}/>
+                <Field label={`ลิงก์ปลายทาง (URL)`} k={`btn${i}_url`} form={form} set={set} placeholder="https://discord.gg/... หรือ https://..." isUrl={true}/>
+              </div>
+            </div>
+          ))}
+          <div className="gtip info" style={{marginTop:14}}>
+            💡 <b>ข้อควรรู้:</b> ตามระบบของ Discord <b>เจ้าของบัญชีจะไม่เห็นปุ่มบนโปรไฟล์ตัวเอง</b> แต่<b>เพื่อนทุกคนที่กดดูโปรไฟล์จะเห็นปุ่มทั้ง 2 ปุ่มและคลิกได้ทันที 100%</b> ครับ
+          </div>
+        </div>
+      </div>
+
+      <div className="col" style={{position:'sticky', top:20}}>
+        <div className="card">
+          <h2><span className="title-wrap">Live preview</span></h2>
+          <div className="pv">
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12}}>
+              <div className="tag" style={{margin:0}}>
+                {{
+                  competing: `COMPETING IN ${(discordMeta.app_name || 'APP').toUpperCase()} · 📌 อยู่บนสุดเสมอ`,
+                  playing: 'PLAYING A GAME',
+                  listening: `LISTENING TO ${(discordMeta.app_name || 'APP').toUpperCase()}`,
+                  watching: `WATCHING ${(discordMeta.app_name || 'APP').toUpperCase()}`,
+                }[form.activity_type || 'competing'] || 'COMPETING IN APP'}
+              </div>
+              <div style={{color:'var(--muted)', fontSize:16, lineHeight:1, letterSpacing:2}}>•••</div>
+            </div>
+            <div className="pv-body">
+              <div className="art" title={form.large_text || ''}>
+                {largeImgUrl && !largeErr ? (
+                  <img src={largeImgUrl} alt="Large" className="main-img" onError={() => setLargeErr(true)} />
+                ) : (
+                  large ? (largeErr ? 'ERR' : 'IMG') : '◆'
+                )}
+
+                {small && (
+                  <span className="sm-box" title={form.small_text || ''}>
+                    {smallImgUrl && !smallErr ? (
+                      <img src={smallImgUrl} alt="Small" onError={() => setSmallErr(true)} />
+                    ) : (
+                      smallErr ? '!' : 'IMG'
+                    )}
+                  </span>
+                )}
+              </div>
+
+              <div className="pv-txt">
+                <div className="pv-title">{form.details || 'Details'}</div>
+                <div className="pv-state">{form.state || 'State'}</div>
+                {el && <div className="pv-time" style={{display:'flex', alignItems:'center', gap:6}}><span>🎮</span><span>{el.clock}</span></div>}
+              </div>
+            </div>
+
+            {btns.length > 0 && (
+              <div className="pv-btns" style={{display:'grid', gridTemplateColumns: btns.length > 1 ? '1fr 1fr' : '1fr', gap:10, marginTop:14}}>
+                {btns.map(i => (
+                  <a key={i} href={form[`btn${i}_url`] || '#'} target="_blank" rel="noopener"
+                     style={{display:'block', textAlign:'center', padding:'9px 12px', borderRadius:8, background:'#4e5058', fontSize:13, fontWeight:600, color:'#fff', textDecoration:'none', boxShadow:'0 2px 6px rgba(0,0,0,0.25)', transition:'background .15s, transform .1s', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', cursor:'pointer'}}
+                     title={`คลิกเพื่อทดสอบลิงก์: ${form[`btn${i}_url`]}`}>
+                    {form[`btn${i}_text`]}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+          {el && el.human && <div className="since">{el.human} นับจาก {effStart && new Date(effStart*1000).toLocaleString('th-TH')}</div>}
+        </div>
+
+        <div className="card">
+          <h2><span className="title-wrap">Console</span></h2>
+          <div className="console" ref={consoleRef}>
+            {logs.length === 0 && <div className="ln info">พร้อมใช้งาน…</div>}
+            {logs.map(l => (
+              <div className="ln" key={l.id}>
+                <span className="t">{l.t}</span>
+                <span className={l.lvl}>{l.msg}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+    {guide && <Guide step={gStep} setStep={setGStep} onClose={closeGuide}/>}
+    {infoModal && <LicenseInfoModal lic={lic} onClose={() => setInfoModal(false)} onLogout={logoutLicense} />}
+    {verModal && (
+      <VersionModal
+        verInfo={verInfo}
+        checking={verChecking}
+        updating={verUpdating}
+        onCheckAgain={() => checkVersion(false)}
+        onAutoUpdate={autoUpdateApp}
+        onClose={() => setVerModal(false)}
+      />
+    )}
+    {uninstallModal && (
+      <UninstallModal
+        loading={uninstalling}
+        onConfirm={confirmUninstall}
+        onClose={() => setUninstallModal(false)}
+      />
+    )}
+    {toast && <div className={'toast ' + toast.kind}>{toast.msg}</div>}
+  </div>);
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

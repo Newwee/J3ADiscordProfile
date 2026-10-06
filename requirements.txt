@@ -1,0 +1,4 @@
+flask
+customtkinter
+pypresence
+pillow
