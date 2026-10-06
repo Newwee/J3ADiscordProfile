@@ -310,7 +310,7 @@ def get_favicon():
     return send_file(ico_file, mimetype="image/x-icon")
 
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 DEFAULT_VERSION_INFO = {
     "version": APP_VERSION,
     "release_date": "2026-10-06",
@@ -319,10 +319,10 @@ DEFAULT_VERSION_INFO = {
     "download_url": "https://github.com/Newwee/J3ADiscordProfile/releases/latest/download/J3ADiscordProfile.exe",
     "drive_url": "https://drive.google.com/file/d/18Mt5mytIu-jB7Jt7efyr_nTxWGkDTuV0/view?usp=drive_link",
     "changelog": [
+        "อัปเกรดเป็นเวอร์ชัน v1.3.0 (ทดสอบระบบ Auto-Update ผ่าน GitHub)",
         "เพิ่มระบบ Priority Mode (Competing) ให้แอปแสดงอยู่บนสุดของหน้าโปรไฟล์เสมอ ทับทุกเกม 100%",
-        "ซิงค์รูปไอคอนแอปหลักและ Art Assets ล่าสุดจาก Discord อัตโนมัติ (แก้ปัญหารูปติดแคชเก่า)",
-        "เพิ่มปุ่มตรวจสอบเวอร์ชัน (Check Version) พร้อมระบบอัปเดตอัตโนมัติในคลิกเดียว",
-        "เพิ่มปุ่มถอนการติดตั้งโปรแกรม (Uninstaller) ล้างไฟล์และทางลัดหน้าจอครบวงจร",
+        "ซิงค์รูปไอคอนแอปหลักและ Art Assets ล่าสุดจาก Discord อัตโนมัติ",
+        "ระบบตรวจสอบเวอร์ชัน & อัปเดตอัตโนมัติในคลิกเดียว พร้อมระบบถอนการติดตั้งครบวงจร",
     ],
 }
 
