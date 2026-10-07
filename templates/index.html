@@ -493,15 +493,15 @@ function LicenseInfoModal({ lic, onClose, onLogout }) {
 
 function VersionModal({ verInfo, checking, updating, onCheckAgain, onAutoUpdate, onClose }) {
   const hasUpdate = verInfo && verInfo.has_update;
-  const currentV = (verInfo && verInfo.current_version) || '1.4.0';
+  const currentV = (verInfo && verInfo.current_version) || '1.5.0';
   const latestV = (verInfo && verInfo.latest_version) || currentV;
   const changelog = (verInfo && Array.isArray(verInfo.changelog) && verInfo.changelog.length > 0)
     ? verInfo.changelog
     : [
-        'แก้ปัญหาใส่ลิงก์รูปภาพจาก Discord (media.discordapp.net / cdn.discordapp.com) และลิงก์ยาวที่ทำให้เกิด ServerError',
-        'เพิ่มระบบแปลงลิงก์รูปภาพภายนอกให้เป็นลิงก์ถาวรขนาดสั้นอัตโนมัติ (แสดงผลบน Discord 100%)',
-        'เพิ่มปุ่ม 📁 เลือกรูปจากเครื่อง สำหรับรูปใหญ่และรูปเล็ก',
-        'เพิ่มระบบ Priority Mode (Competing) แสดงอยู่บนสุดของหน้าโปรไฟล์เสมอ',
+        '🧪 อัปเดตทดสอบระบบ (Test Update v1.5.0) — ทดสอบระบบแจ้งเตือนและการกดอัปเดตเวอร์ชันใหม่ (ไม่มีการเปลี่ยนแปลงฟีเจอร์เพิ่มเติม)',
+        'ระบบแจ้งเตือนเวอร์ชันใหม่แบบเด่นชัด (ป้าย NEW! + แถบแจ้งเตือนด้านบน + เช็คอัตโนมัติ)',
+        'ซิงค์รายการรูปภาพจาก Discord Developer Portal แบบ Realtime อัตโนมัติ พร้อมปุ่ม 🔄 Refresh',
+        'เพิ่ม Tooltip แสดงข้อความเมื่อนำเมาส์ชี้รูปใหญ่/รูปเล็กในหน้า Live Preview และแก้ปัญหา Copy Image Link จาก Discord',
       ];
 
   return (
@@ -653,7 +653,7 @@ function App() {
 
   // Version & Uninstall state
   const [verModal, setVerModal] = useState(false);
-  const [verInfo, setVerInfo] = useState({ current_version: '1.4.0', latest_version: '1.4.0', has_update: false });
+  const [verInfo, setVerInfo] = useState({ current_version: '1.5.0', latest_version: '1.5.0', has_update: false });
   const [verChecking, setVerChecking] = useState(false);
   const [verUpdating, setVerUpdating] = useState(false);
   const [uninstallModal, setUninstallModal] = useState(false);
@@ -1073,7 +1073,7 @@ function App() {
           <div style={{display:'flex', alignItems:'center', gap:8}}>
             <h1>J3A Discord Profile</h1>
             <span style={{fontSize:11, fontFamily:'var(--mono)', padding:'2px 7px', borderRadius:99, background:'var(--accent-soft)', color:'var(--accent)', fontWeight:600}}>
-              v{verInfo?.current_version || '1.4.0'}
+              v{verInfo?.current_version || '1.5.0'}
             </span>
           </div>
           <div className="sub">Web Control Panel · Discord Rich Presence</div>
@@ -1091,7 +1091,7 @@ function App() {
               <span className="ver-badge">NEW!</span>
             </>
           ) : (
-            `🔄 เช็คเวอร์ชัน (v${verInfo?.current_version || '1.4.0'})`
+            `🔄 เช็คเวอร์ชัน (v${verInfo?.current_version || '1.5.0'})`
           )}
         </button>
         <button className="guide-btn" onClick={openGuide}>📖 คู่มือ</button>

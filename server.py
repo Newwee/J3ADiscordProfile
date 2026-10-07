@@ -521,7 +521,7 @@ def get_favicon():
     return send_file(ico_file, mimetype="image/x-icon")
 
 
-APP_VERSION = "1.4.0"
+APP_VERSION = "1.5.0"
 DEFAULT_VERSION_INFO = {
     "version": APP_VERSION,
     "release_date": "2026-10-07",
@@ -530,10 +530,10 @@ DEFAULT_VERSION_INFO = {
     "download_url": "https://github.com/Newwee/J3ADiscordProfile/releases/latest/download/J3ADiscordProfile.exe",
     "drive_url": "https://drive.google.com/file/d/18Mt5mytIu-jB7Jt7efyr_nTxWGkDTuV0/view?usp=drive_link",
     "changelog": [
-        "อัปเกรดเป็นเวอร์ชัน v1.4.0 — แก้ปัญหาใส่ลิงก์รูปภาพจาก Discord (media.discordapp.net / cdn.discordapp.com) และลิงก์ยาวที่ทำให้เกิด ServerError: Unknown error",
-        "เพิ่มระบบแปลงลิงก์รูปภาพภายนอกให้เป็นลิงก์ถาวรขนาดสั้นอัตโนมัติ (ไม่หมดอายุ และแสดงผลบน Discord 100%)",
-        "เพิ่มปุ่ม 📁 เลือกรูปจากเครื่อง สำหรับรูปใหญ่ (Large Image) และรูปเล็ก (Small Image) อัปโหลดตรงจากคอมพิวเตอร์ได้ทันที",
-        "เพิ่มระบบป้องกัน ServerError ใน RPCWorker เพื่อให้สถานะออนไลน์ต่อเนื่องแม้ลิงก์รูปมีปัญหา",
+        "🧪 อัปเดตทดสอบระบบ (Test Update v1.5.0) — ทดสอบระบบแจ้งเตือนและการกดอัปเดตเวอร์ชันใหม่ (ไม่มีการเปลี่ยนแปลงฟีเจอร์เพิ่มเติม)",
+        "ระบบแจ้งเตือนเวอร์ชันใหม่แบบเด่นชัด (ป้าย NEW! + แถบแจ้งเตือนด้านบน + เช็คอัตโนมัติ)",
+        "ซิงค์รายการรูปภาพจาก Discord Developer Portal แบบ Realtime อัตโนมัติ พร้อมปุ่ม 🔄 Refresh",
+        "เพิ่ม Tooltip แสดงข้อความเมื่อนำเมาส์ชี้รูปใหญ่/รูปเล็กในหน้า Live Preview และแก้ปัญหา Copy Image Link จาก Discord",
     ],
 }
 
