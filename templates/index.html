@@ -106,8 +106,14 @@ input:disabled{opacity:.5}
 
 /* Guide */
 .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.guide-btn{display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:var(--accent-soft);border:1px solid var(--accent);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,transform .12s}
+.guide-btn{position:relative;display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:var(--accent-soft);border:1px solid var(--accent);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,transform .12s,box-shadow .2s}
 .guide-btn:hover{background:#7c5cff44}.guide-btn:active{transform:scale(.97)}
+.ver-btn.has-update{background:linear-gradient(135deg,#f59e0b,#ea580c,#ef4444)!important;border-color:#fde047!important;color:#fff!important;font-weight:700;box-shadow:0 0 0 0 rgba(245,158,11,.7),0 6px 24px rgba(234,88,12,.55);animation:verGlow 1.5s infinite}
+.ver-btn.has-update:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.ver-badge{position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;font-family:var(--mono);padding:2px 7px;border-radius:999px;border:2px solid #0a0c10;box-shadow:0 4px 12px rgba(239,68,68,.8);letter-spacing:.04em;animation:verBounce 1.2s infinite}
+@keyframes verGlow{0%{box-shadow:0 0 0 0 rgba(245,158,11,.75),0 4px 20px rgba(234,88,12,.5)}70%{box-shadow:0 0 0 12px rgba(245,158,11,0),0 6px 28px rgba(239,68,68,.65)}100%{box-shadow:0 0 0 0 rgba(245,158,11,0),0 4px 20px rgba(234,88,12,.5)}}
+@keyframes verBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.08)}}
+.update-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px 20px;margin-bottom:22px;border-radius:16px;background:linear-gradient(90deg,rgba(245,158,11,.18),rgba(239,68,68,.15),rgba(124,92,255,.15));border:1.5px solid #f59e0b;box-shadow:0 10px 34px rgba(245,158,11,.2);animation:in .3s}
 a.btn{text-decoration:none;display:inline-block}
 .modal-bg{position:fixed;inset:0;z-index:20;background:#05070bd9;backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0}}
@@ -978,7 +984,12 @@ function App() {
     try {
       const r = await api('/api/version/check');
       if (r && r.ok) {
-        setVerInfo(r);
+        setVerInfo(prev => {
+          if (!openModal && r.has_update && !prev?.has_update) {
+            say(`🔔 แจ้งเตือน! พบเวอร์ชันใหม่ v${r.latest_version} พร้อมให้อัปเดตแล้ว`, 'ok');
+          }
+          return r;
+        });
         if (openModal) {
           say(r.has_update ? `พบเวอร์ชันใหม่ v${r.latest_version}!` : `คุณใช้เวอร์ชันล่าสุดแล้ว (v${r.current_version})`, 'ok');
         }
@@ -992,6 +1003,13 @@ function App() {
 
   useEffect(() => {
     checkVersion(false);
+    const iv = setInterval(() => checkVersion(false), 45000);
+    const onFocus = () => checkVersion(false);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearInterval(iv);
+      window.removeEventListener('focus', onFocus);
+    };
   }, []);
 
   const autoUpdateApp = async () => {
@@ -1066,8 +1084,15 @@ function App() {
           <span className="dot online" style={{background:'var(--ok)'}}/>
           สิทธิ์: Active
         </div>
-        <button className="guide-btn" style={{borderColor: verInfo?.has_update ? 'var(--warn)' : 'var(--border)', background: verInfo?.has_update ? 'rgba(245,158,11,0.12)' : 'var(--input)'}} onClick={() => checkVersion(true)} title="ตรวจสอบเวอร์ชันล่าสุดและอัปเดต">
-          {verInfo?.has_update ? `🎉 อัปเดต v${verInfo.latest_version}` : `🔄 เช็คเวอร์ชัน (v${verInfo?.current_version || '1.4.0'})`}
+        <button className={'guide-btn ver-btn' + (verInfo?.has_update ? ' has-update' : '')} onClick={() => checkVersion(true)} title="ตรวจสอบเวอร์ชันล่าสุดและอัปเดต">
+          {verInfo?.has_update ? (
+            <>
+              🔔 มีอัปเดตใหม่ v{verInfo.latest_version}!
+              <span className="ver-badge">NEW!</span>
+            </>
+          ) : (
+            `🔄 เช็คเวอร์ชัน (v${verInfo?.current_version || '1.4.0'})`
+          )}
         </button>
         <button className="guide-btn" onClick={openGuide}>📖 คู่มือ</button>
         <button className="guide-btn" style={{borderColor:'rgba(124,92,255,0.4)', background:'rgba(124,92,255,0.1)'}} onClick={logoutLicense} title="ออกจากระบบเพื่อสลับคีย์">🚪 ออกจากระบบ</button>
@@ -1076,6 +1101,40 @@ function App() {
         <div className="pill"><span className={'dot ' + srv.state}/>{stateTxt}</div>
       </div>
     </header>
+
+    {verInfo?.has_update && (
+      <div className="update-banner">
+        <div style={{display:'flex', alignItems:'center', gap:12}}>
+          <div style={{fontSize:26, filter:'drop-shadow(0 2px 8px rgba(245,158,11,0.5))'}}>🚀</div>
+          <div>
+            <div style={{fontSize:14, fontWeight:700, color:'#fef3c7', display:'flex', alignItems:'center', gap:8}}>
+              <span>แจ้งเตือนอัปเดตใหม่! พบเวอร์ชัน v{verInfo.latest_version} พร้อมให้ติดตั้งแล้ว</span>
+              <span style={{fontSize:10, background:'#ef4444', color:'#fff', padding:'2px 7px', borderRadius:99, fontWeight:800}}>UPDATE AVAILABLE</span>
+            </div>
+            <div style={{fontSize:12, color:'#fde68a', marginTop:2}}>
+              เวอร์ชันปัจจุบันของคุณคือ v{verInfo.current_version} — กดปุ่มอัปเดตด้านขวาเพื่อติดตั้งเวอร์ชันใหม่และรีสตาร์ทอัตโนมัติในคลิกเดียว
+            </div>
+          </div>
+        </div>
+        <div style={{display:'flex', gap:8, alignItems:'center'}}>
+          <button
+            className="b1"
+            style={{background:'linear-gradient(135deg, #f59e0b, #ea580c)', padding:'9px 16px', fontSize:12.5, boxShadow:'0 4px 16px rgba(245,158,11,0.4)'}}
+            disabled={verUpdating}
+            onClick={autoUpdateApp}
+          >
+            {verUpdating ? '⏳ กำลังอัปเดตและรีสตาร์ท…' : `⚡ อัปเดตเป็น v${verInfo.latest_version} ทันที`}
+          </button>
+          <button
+            className="b2"
+            style={{padding:'9px 14px', fontSize:12, borderColor:'rgba(245,158,11,0.5)', color:'#fde68a'}}
+            onClick={() => setVerModal(true)}
+          >
+            📋 ดูรายละเอียด
+          </button>
+        </div>
+      </div>
+    )}
 
     <div className="grid">
       <div className="col">
