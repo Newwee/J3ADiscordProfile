@@ -269,17 +269,23 @@ def get_app_metadata(client_id, force=False):
     cid = str(client_id).strip()
     now = time.time()
     cached = _ASSET_CACHE.get(cid)
-    if not force and cached and (now - cached["ts"] < 30):
+    if not force and cached and (now - cached["ts"] < 4):
         return cached["data"]
 
     name = ""
     icon_url = ""
     assets = []
+    req_headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Cache-Control": "no-cache, no-store, max-age=0",
+        "Pragma": "no-cache",
+    }
+    ts_q = int(now * 1000)
 
-    # 1. ดึงชื่อแอปและไอคอนแอปปัจจุบันจาก Discord OAuth2 RPC API
+    # 1. ดึงชื่อแอปและไอคอนแอปปัจจุบันจาก Discord OAuth2 RPC API แบบเรียลไทม์
     try:
-        rpc_url = f"https://discord.com/api/v9/oauth2/applications/{cid}/rpc"
-        req = urllib.request.Request(rpc_url, headers={"User-Agent": "Mozilla/5.0"})
+        rpc_url = f"https://discord.com/api/v9/oauth2/applications/{cid}/rpc?_={ts_q}"
+        req = urllib.request.Request(rpc_url, headers=req_headers)
         with urllib.request.urlopen(req, timeout=4) as resp:
             info = json.loads(resp.read().decode())
             name = str(info.get("name") or "")
@@ -292,10 +298,10 @@ def get_app_metadata(client_id, force=False):
             name = cached["data"].get("name", "")
             icon_url = cached["data"].get("icon_url", "")
 
-    # 2. ดึงรายการ Art Assets จาก Discord API
+    # 2. ดึงรายการ Art Assets จาก Discord API แบบเรียลไทม์
     try:
-        url = f"https://discord.com/api/v9/oauth2/applications/{cid}/assets"
-        req2 = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        url = f"https://discord.com/api/v9/oauth2/applications/{cid}/assets?_={ts_q}"
+        req2 = urllib.request.Request(url, headers=req_headers)
         with urllib.request.urlopen(req2, timeout=4) as resp2:
             raw = json.loads(resp2.read().decode())
             assets = [
@@ -334,16 +340,16 @@ def normalize_image_key(val, client_id, is_large=True, force=False):
         if icon_url:
             return icon_url
         if assets:
-            return assets[-1]["name"]
+            return assets[-1]["url"]
         return ""
 
-    # หากผู้ใช้นำลิงก์ Discord App Asset มาแปะ หรือใส่เลข Asset ID มา ให้แปลงเป็นชื่อ Asset Key
+    # หากผู้ใช้นำลิงก์ Discord App Asset, เลข Asset ID หรือชื่อ Asset Key (เช่น reyna, duck) มาใส่
+    # ให้แปลงเป็น Direct CDN URL ของ Asset เพื่อให้แสดงผลบน Discord ทันทีแม้เพิ่งอัปโหลดใน Developer Portal (ไม่ติดรูป ?)
     m = re.search(r"cdn\.discordapp\.com/app-assets/\d+/(\d+)", val)
     target_id = m.group(1) if m else (val if val.isdigit() else None)
-    if target_id:
-        for a in assets:
-            if a["id"] == target_id:
-                return a["name"]
+    for a in assets:
+        if (target_id and a["id"] == target_id) or a["name"].lower() == val.lower():
+            return a["url"]
 
     # หากเป็นลิงก์รูปภาพภายนอก (เช่น media.discordapp.net, cdn.discordapp.com/attachments หรือเว็บอื่นๆ)
     # ให้แปลงเป็นลิงก์รูปภาพถาวรขนาดสั้นที่ Discord RPC รองรับ 100%

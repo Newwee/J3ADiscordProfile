@@ -79,10 +79,13 @@ input:disabled{opacity:.5}
 .pv{background:#15181f;border:1px solid var(--border);border-radius:14px;padding:18px}
 .pv .tag{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
 .pv-body{display:flex;gap:16px;align-items:center}
-.art{position:relative;width:82px;height:82px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#3b82f6);flex:none;display:grid;place-items:center;font-size:12px;color:#ffffffcc;font-weight:600;overflow:visible}
+.art{position:relative;width:82px;height:82px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#3b82f6);flex:none;display:grid;place-items:center;font-size:12px;color:#ffffffcc;font-weight:600;overflow:visible;cursor:pointer}
 .art img.main-img{width:100%;height:100%;object-fit:cover;border-radius:12px;display:block}
-.art .sm-box{position:absolute;right:-7px;bottom:-7px;width:30px;height:30px;border-radius:50%;background:#06b6d4;border:3px solid #15181f;display:grid;place-items:center;font-size:8px;overflow:hidden;box-shadow:0 2px 6px #0008}
-.art .sm-box img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.art .sm-box{position:absolute;right:-7px;bottom:-7px;width:30px;height:30px;border-radius:50%;background:#06b6d4;border:3px solid #15181f;display:grid;place-items:center;font-size:8px;overflow:visible;box-shadow:0 2px 6px #0008;cursor:pointer;z-index:5}
+.art .sm-box img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.dc-tip{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px) scale(.94);background:#111214;color:#f2f3f5;padding:6px 12px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis;box-shadow:0 8px 24px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.08);pointer-events:none;opacity:0;transition:opacity .14s ease,transform .14s ease;z-index:40;letter-spacing:0}
+.dc-tip:after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#111214}
+.dc-tip.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 .pv-txt{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:13.5px}
 .pv-txt div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pv-title{font-weight:700;font-size:14.5px;color:#fff}
@@ -676,29 +679,63 @@ function App() {
   
   const [largeErr, setLargeErr] = useState(false);
   const [smallErr, setSmallErr] = useState(false);
+  const [hoverTip, setHoverTip] = useState(null); // 'large' | 'small' | null
+  const [assetTarget, setAssetTarget] = useState('large_image'); // 'large_image' | 'small_image'
+  const [metaSyncing, setMetaSyncing] = useState(false);
+  const [lastMetaSync, setLastMetaSync] = useState('');
   const [discordMeta, setDiscordMeta] = useState({ app_name: '', app_icon: '', assets: [] });
+  const prevAssetIdsRef = useRef(null);
 
-  const fetchDiscordMeta = (cid, force = false) => {
+  const fetchDiscordMeta = (cid, force = false, silent = true) => {
     const cleanCid = (cid || '').trim();
     if (cleanCid.length >= 17) {
+      if (!silent) setMetaSyncing(true);
       api(`/api/discord/assets?client_id=${cleanCid}${force ? '&force=1' : ''}`).then(r => {
         if (r && r.ok) {
+          const nextAssets = Array.isArray(r.assets) ? r.assets : [];
+          const nextIds = nextAssets.map(a => a.id).join(',');
+          if (prevAssetIdsRef.current !== null && prevAssetIdsRef.current !== nextIds) {
+            const oldSet = new Set(prevAssetIdsRef.current.split(',').filter(Boolean));
+            const added = nextAssets.filter(a => !oldSet.has(a.id));
+            if (added.length > 0) {
+              say(`✨ ซิงค์รูปใหม่จาก Discord Developer Portal: ${added.map(a => a.name).join(', ')}`, 'ok');
+            }
+          }
+          prevAssetIdsRef.current = nextIds;
           setDiscordMeta({
             app_name: r.app_name || '',
             app_icon: r.app_icon || '',
-            assets: Array.isArray(r.assets) ? r.assets : [],
+            assets: nextAssets,
           });
+          setLastMetaSync(new Date().toLocaleTimeString('th-TH', { hour12: false }));
           setLargeErr(false);
           setSmallErr(false);
+          if (!silent) say(`🔄 รีเฟรชรูปภาพจาก Discord สำเร็จ (${nextAssets.length} รูป)`, 'ok');
         }
-      }).catch(() => {});
+      }).catch(() => {}).finally(() => {
+        if (!silent) setMetaSyncing(false);
+      });
     } else {
+      prevAssetIdsRef.current = null;
       setDiscordMeta({ app_name: '', app_icon: '', assets: [] });
     }
   };
 
+  // ซิงค์รายการรูปภาพจาก Discord Developer Portal แบบ Realtime อัตโนมัติ (ทุก 5 วินาที และเมื่อสลับหน้าต่างกลับมา)
   useEffect(() => {
-    fetchDiscordMeta(form.client_id, false);
+    const cleanCid = (form.client_id || '').trim();
+    if (cleanCid.length < 17) {
+      setDiscordMeta({ app_name: '', app_icon: '', assets: [] });
+      return;
+    }
+    fetchDiscordMeta(cleanCid, true, true);
+    const id = setInterval(() => fetchDiscordMeta(cleanCid, true, true), 5000);
+    const onFocus = () => fetchDiscordMeta(cleanCid, true, true);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [form.client_id]);
 
   const seq = useRef(0), loaded = useRef(false), consoleRef = useRef(null);
@@ -722,7 +759,11 @@ function App() {
       try {
         const res = await api('/api/image/upload', { data_url: reader.result, filename: file.name });
         if (res && res.ok && res.url) {
-          set(fieldKey, res.url);
+          const nextForm = { ...form, [fieldKey]: res.url };
+          setForm(nextForm);
+          if (online) {
+            await api('/api/update', { form: nextForm, show_time: showTime, start_ts: startTs() });
+          }
           say('✨ อัปโหลดและตั้งค่ารูปภาพสำเร็จ!', 'ok');
         } else {
           say(res?.error || 'อัปโหลดรูปภาพไม่สำเร็จ');
@@ -744,7 +785,7 @@ function App() {
       !val.startsWith('https://iili.io/') &&
       !val.startsWith('https://n.uguu.se/') &&
       !val.startsWith('https://cdn.discordapp.com/app-') &&
-      (val.includes('discordapp.net/attachments') || val.includes('discordapp.com/attachments') || val.length > 200 || val.includes('format=webp'))
+      (val.includes('discordapp.net/') || val.includes('discordapp.com/attachments') || val.length > 200 || val.includes('format=webp'))
     );
     if (!needsConvert) return;
     const timer = setTimeout(async () => {
@@ -752,14 +793,20 @@ function App() {
       try {
         const r = await api('/api/image/resolve', { url: val });
         if (r && r.ok && r.url && r.url !== val) {
-          set('large_image', r.url);
-          say('✨ แปลงลิงก์รูปใหญ่ให้รองรับ Discord ถาวรแล้ว!', 'ok');
+          setForm(prev => {
+            const nextForm = { ...prev, large_image: r.url };
+            if (srv.state === 'online') {
+              api('/api/update', { form: nextForm, show_time: showTime, start_ts: startTs() });
+            }
+            return nextForm;
+          });
+          say('✨ แปลงลิงก์รูปใหญ่ให้แสดงบน Discord ถาวรแล้ว!', 'ok');
         }
       } catch (e) {}
       setImgUploading(u => ({ ...u, large_image: false }));
-    }, 400);
+    }, 250);
     return () => clearTimeout(timer);
-  }, [form.large_image]);
+  }, [form.large_image, srv.state]);
 
   useEffect(() => {
     const val = (form.small_image || '').trim();
@@ -768,7 +815,7 @@ function App() {
       !val.startsWith('https://iili.io/') &&
       !val.startsWith('https://n.uguu.se/') &&
       !val.startsWith('https://cdn.discordapp.com/app-') &&
-      (val.includes('discordapp.net/attachments') || val.includes('discordapp.com/attachments') || val.length > 200 || val.includes('format=webp'))
+      (val.includes('discordapp.net/') || val.includes('discordapp.com/attachments') || val.length > 200 || val.includes('format=webp'))
     );
     if (!needsConvert) return;
     const timer = setTimeout(async () => {
@@ -776,14 +823,20 @@ function App() {
       try {
         const r = await api('/api/image/resolve', { url: val });
         if (r && r.ok && r.url && r.url !== val) {
-          set('small_image', r.url);
-          say('✨ แปลงลิงก์รูปเล็กให้รองรับ Discord ถาวรแล้ว!', 'ok');
+          setForm(prev => {
+            const nextForm = { ...prev, small_image: r.url };
+            if (srv.state === 'online') {
+              api('/api/update', { form: nextForm, show_time: showTime, start_ts: startTs() });
+            }
+            return nextForm;
+          });
+          say('✨ แปลงลิงก์รูปเล็กให้แสดงบน Discord ถาวรแล้ว!', 'ok');
         }
       } catch (e) {}
       setImgUploading(u => ({ ...u, small_image: false }));
-    }, 400);
+    }, 250);
     return () => clearTimeout(timer);
-  }, [form.small_image]);
+  }, [form.small_image, srv.state]);
 
   useEffect(() => { setLargeErr(false); }, [form.large_image]);
   useEffect(() => { setSmallErr(false); }, [form.small_image]);
@@ -1116,35 +1169,72 @@ function App() {
         <div className="card">
           <h2>
             <span className="title-wrap">Images</span>
-            <button className="btn sm" type="button" onClick={() => { fetchDiscordMeta(form.client_id, true); say('ซิงค์รูปภาพล่าสุดจาก Discord แล้ว', 'ok'); }} title="ดึงรูปไอคอนและ Art Assets ล่าสุดจาก Discord">🔄 ซิงค์รูปจาก Discord</button>
+            <div style={{display:'flex', alignItems:'center', gap:8}}>
+              <span style={{fontSize:11, color:'var(--ok)', textTransform:'none', letterSpacing:0, fontWeight:500, display:'inline-flex', alignItems:'center', gap:5}}>
+                <span className="dot online" style={{width:7, height:7}}/>
+                ซิงค์ Realtime {lastMetaSync ? `(${lastMetaSync})` : ''}
+              </span>
+              <button className="btn sm" type="button" disabled={metaSyncing} onClick={() => fetchDiscordMeta(form.client_id, true, false)} title="รีเฟรชรูปไอคอนและ Art Assets ล่าสุดจาก Discord Developer Portal">
+                {metaSyncing ? '⏳ กำลังรีเฟรช…' : '🔄 รีเฟรช (Refresh)'}
+              </button>
+            </div>
           </h2>
 
           <input ref={largeFileRef} type="file" accept="image/*" style={{display:'none'}} onChange={e => handleFileUpload('large_image', e)} />
           <input ref={smallFileRef} type="file" accept="image/*" style={{display:'none'}} onChange={e => handleFileUpload('small_image', e)} />
 
-          {(discordMeta.app_icon || discordAssets.length > 0) && (
-            <div style={{marginBottom:14, padding:'10px 14px', background:'rgba(124,92,255,0.08)', border:'1px solid rgba(124,92,255,0.25)', borderRadius:12}}>
-              <div style={{fontSize:12, color:'var(--text)', fontWeight:600, marginBottom:8, display:'flex', alignItems:'center', gap:6}}>
-                <span>✨</span><span>รูปภาพที่ตรวจพบใน Application {discordMeta.app_name ? `"${discordMeta.app_name}"` : 'ของคุณ'} — คลิกเพื่อเลือกใช้ทันที:</span>
+          {(form.client_id.trim().length >= 17 || discordMeta.app_icon || discordAssets.length > 0) && (
+            <div style={{marginBottom:14, padding:'12px 14px', background:'rgba(124,92,255,0.08)', border:'1px solid rgba(124,92,255,0.25)', borderRadius:12}}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8, marginBottom:10}}>
+                <div style={{fontSize:12, color:'var(--text)', fontWeight:600, display:'flex', alignItems:'center', gap:6}}>
+                  <span>✨</span><span>รูปภาพที่ตรวจพบใน Application {discordMeta.app_name ? `"${discordMeta.app_name}"` : 'ของคุณ'} — คลิกเพื่อเลือกใช้ทันที:</span>
+                </div>
+                <div style={{display:'flex', alignItems:'center', gap:6}}>
+                  <div style={{display:'inline-flex', background:'var(--input)', border:'1px solid var(--border)', borderRadius:8, padding:2, fontSize:11}}>
+                    <button type="button" onClick={() => setAssetTarget('large_image')} style={{border:0, borderRadius:6, padding:'3px 8px', cursor:'pointer', font:'inherit', fontWeight:600, background: assetTarget === 'large_image' ? 'var(--accent)' : 'transparent', color: assetTarget === 'large_image' ? '#fff' : 'var(--muted)'}}>
+                      🖼️ ตั้งเป็นรูปใหญ่
+                    </button>
+                    <button type="button" onClick={() => setAssetTarget('small_image')} style={{border:0, borderRadius:6, padding:'3px 8px', cursor:'pointer', font:'inherit', fontWeight:600, background: assetTarget === 'small_image' ? 'var(--accent)' : 'transparent', color: assetTarget === 'small_image' ? '#fff' : 'var(--muted)'}}>
+                      ⭕ ตั้งเป็นรูปเล็ก
+                    </button>
+                  </div>
+                  <button type="button" className="btn sm" style={{padding:'4px 9px', fontSize:11.5}} disabled={metaSyncing} onClick={() => fetchDiscordMeta(form.client_id, true, false)} title="กดเพื่อดึงรูปที่เพิ่งอัปโหลดใน Discord Developer Portal ทันที">
+                    {metaSyncing ? '⏳…' : '🔄 Refresh'}
+                  </button>
+                </div>
               </div>
               <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
                 {discordMeta.app_icon && (
-                  <button type="button" className="btn sm" style={{display:'inline-flex', alignItems:'center', gap:6, padding:'4px 10px', background: (!form.large_image || form.large_image === '@app_icon') ? 'var(--accent-soft)' : 'var(--input)', borderColor: (!form.large_image || form.large_image === '@app_icon') ? 'var(--accent)' : 'var(--border)'}}
-                          onClick={() => { set('large_image', ''); say('เลือกใช้ไอคอนแอปหลัก (อัตโนมัติ)', 'ok'); }}>
+                  <button type="button" className="btn sm" style={{display:'inline-flex', alignItems:'center', gap:6, padding:'4px 10px', background: (assetTarget === 'large_image' ? (!form.large_image || form.large_image === '@app_icon') : form.small_image === '@app_icon') ? 'var(--accent-soft)' : 'var(--input)', borderColor: (assetTarget === 'large_image' ? (!form.large_image || form.large_image === '@app_icon') : form.small_image === '@app_icon') ? 'var(--accent)' : 'var(--border)'}}
+                          onClick={async () => {
+                            const val = assetTarget === 'large_image' ? '' : '@app_icon';
+                            const nextForm = { ...form, [assetTarget]: val };
+                            setForm(nextForm);
+                            if (online) await api('/api/update', { form: nextForm, show_time: showTime, start_ts: startTs() });
+                            say(`เลือกใช้ไอคอนแอปหลักสำหรับ${assetTarget === 'large_image' ? 'รูปใหญ่' : 'รูปเล็ก'}แล้ว`, 'ok');
+                          }}>
                     <img src={discordMeta.app_icon} style={{width:20, height:20, borderRadius:4, objectFit:'cover'}} alt="App Icon"/>
                     <span>ไอคอนแอปหลัก (อัตโนมัติ)</span>
                   </button>
                 )}
-                {discordAssets.map(a => (
-                  <button key={a.id} type="button" className="btn sm" style={{display:'inline-flex', alignItems:'center', gap:6, padding:'4px 10px', background: form.large_image === a.name ? 'var(--accent-soft)' : 'var(--input)', borderColor: form.large_image === a.name ? 'var(--accent)' : 'var(--border)'}}
-                          onClick={() => { set('large_image', a.name); say(`เลือกรูปใหญ่: ${a.name}`, 'ok'); }}>
-                    <img src={a.url} style={{width:20, height:20, borderRadius:4, objectFit:'cover'}} alt={a.name}/>
-                    <span>{a.name}</span>
-                  </button>
-                ))}
+                {discordAssets.map(a => {
+                  const isSelected = form[assetTarget] === a.name;
+                  return (
+                    <button key={a.id} type="button" className="btn sm" style={{display:'inline-flex', alignItems:'center', gap:6, padding:'4px 10px', background: isSelected ? 'var(--accent-soft)' : 'var(--input)', borderColor: isSelected ? 'var(--accent)' : 'var(--border)'}}
+                            onClick={async () => {
+                              const nextForm = { ...form, [assetTarget]: a.name };
+                              setForm(nextForm);
+                              if (online) await api('/api/update', { form: nextForm, show_time: showTime, start_ts: startTs() });
+                              say(`เลือก${assetTarget === 'large_image' ? 'รูปใหญ่' : 'รูปเล็ก'}: ${a.name}`, 'ok');
+                            }}>
+                      <img src={a.url} style={{width:20, height:20, borderRadius:4, objectFit:'cover'}} alt={a.name}/>
+                      <span>{a.name}</span>
+                    </button>
+                  );
+                })}
               </div>
               <div style={{fontSize:11.5, color:'var(--muted)', marginTop:8}}>
-                💡 หากเว้นว่างช่องรูปใหญ่ โปรแกรมจะส่งรูปไอคอนแอปปัจจุบันไปแสดงบน Discord ให้อัตโนมัติทันที (ไม่ติดรูปแคชเก่า)
+                💡 อัปโหลดรูปใหม่ใน <b>Discord Developer Portal → Rich Presence → Art Assets</b> แล้วรายการนี้จะซิงค์ขึ้นให้อัตโนมัติแบบ Realtime (หรือกดปุ่ม <b>🔄 Refresh</b> ได้ทันที)
               </div>
             </div>
           )}
@@ -1171,7 +1261,7 @@ function App() {
           </div>
 
           <div className="hint" style={{marginTop:4}}>
-            ✨ <b>ระบบแปลงลิงก์อัตโนมัติ (v1.4.0):</b> สามารถวางลิงก์รูปจากแชท Discord (<code>media.discordapp.net</code> / <code>cdn.discordapp.com</code>) หรือกด <b>📁 เลือกรูปจากเครื่อง</b> ได้เลย ระบบจะแปลงเป็นลิงก์ถาวรให้แสดงผลบน Discord 100% โดยไม่เกิด Error ครับ
+            ✨ <b>ระบบแปลงลิงก์อัตโนมัติ (v1.4.0):</b> สามารถกด <b>Copy Image Link</b> จาก Discord มาวาง หรือกด <b>📁 เลือกรูปจากเครื่อง</b> ได้เลย ระบบจะแปลงเป็นลิงก์ถาวรให้แสดงผลบน Discord จริง 100% (ไม่ขึ้นรูป <code>?</code>)
           </div>
         </div>
 
@@ -1234,7 +1324,15 @@ function App() {
               <div style={{color:'var(--muted)', fontSize:16, lineHeight:1, letterSpacing:2}}>•••</div>
             </div>
             <div className="pv-body">
-              <div className="art" title={form.large_text || ''}>
+              <div
+                className="art"
+                onMouseEnter={() => setHoverTip('large')}
+                onMouseLeave={() => setHoverTip(null)}
+              >
+                <div className={'dc-tip' + (hoverTip === 'large' && (form.large_text || '').trim() ? ' show' : '')}>
+                  {form.large_text}
+                </div>
+
                 {largeImgUrl && !largeErr ? (
                   <img src={largeImgUrl} alt="Large" className="main-img" onError={() => setLargeErr(true)} />
                 ) : (
@@ -1242,7 +1340,14 @@ function App() {
                 )}
 
                 {small && (
-                  <span className="sm-box" title={form.small_text || ''}>
+                  <span
+                    className="sm-box"
+                    onMouseEnter={e => { e.stopPropagation(); setHoverTip('small'); }}
+                    onMouseLeave={e => { e.stopPropagation(); setHoverTip('large'); }}
+                  >
+                    <div className={'dc-tip' + (hoverTip === 'small' && (form.small_text || '').trim() ? ' show' : '')}>
+                      {form.small_text}
+                    </div>
                     {smallImgUrl && !smallErr ? (
                       <img src={smallImgUrl} alt="Small" onError={() => setSmallErr(true)} />
                     ) : (
