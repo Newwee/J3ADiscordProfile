@@ -484,15 +484,15 @@ function LicenseInfoModal({ lic, onClose, onLogout }) {
 
 function VersionModal({ verInfo, checking, updating, onCheckAgain, onAutoUpdate, onClose }) {
   const hasUpdate = verInfo && verInfo.has_update;
-  const currentV = (verInfo && verInfo.current_version) || '1.2.0';
+  const currentV = (verInfo && verInfo.current_version) || '1.4.0';
   const latestV = (verInfo && verInfo.latest_version) || currentV;
   const changelog = (verInfo && Array.isArray(verInfo.changelog) && verInfo.changelog.length > 0)
     ? verInfo.changelog
     : [
+        'แก้ปัญหาใส่ลิงก์รูปภาพจาก Discord (media.discordapp.net / cdn.discordapp.com) และลิงก์ยาวที่ทำให้เกิด ServerError',
+        'เพิ่มระบบแปลงลิงก์รูปภาพภายนอกให้เป็นลิงก์ถาวรขนาดสั้นอัตโนมัติ (แสดงผลบน Discord 100%)',
+        'เพิ่มปุ่ม 📁 เลือกรูปจากเครื่อง สำหรับรูปใหญ่และรูปเล็ก',
         'เพิ่มระบบ Priority Mode (Competing) แสดงอยู่บนสุดของหน้าโปรไฟล์เสมอ',
-        'ซิงค์รูปไอคอนแอปและ Art Assets ล่าสุดจาก Discord อัตโนมัติ',
-        'เพิ่มปุ่มตรวจสอบเวอร์ชัน & อัปเดตอัตโนมัติในคลิกเดียว',
-        'เพิ่มปุ่มถอนการติดตั้งโปรแกรม (Uninstaller) แบบครบวงจร',
       ];
 
   return (
@@ -644,11 +644,14 @@ function App() {
 
   // Version & Uninstall state
   const [verModal, setVerModal] = useState(false);
-  const [verInfo, setVerInfo] = useState({ current_version: '1.2.0', latest_version: '1.2.0', has_update: false });
+  const [verInfo, setVerInfo] = useState({ current_version: '1.4.0', latest_version: '1.4.0', has_update: false });
   const [verChecking, setVerChecking] = useState(false);
   const [verUpdating, setVerUpdating] = useState(false);
   const [uninstallModal, setUninstallModal] = useState(false);
   const [uninstalling, setUninstalling] = useState(false);
+  const [imgUploading, setImgUploading] = useState({ large_image: false, small_image: false });
+  const largeFileRef = useRef(null);
+  const smallFileRef = useRef(null);
 
   // Guide: auto-open on first visit, reopen any time from the header button
   const [guide, setGuide] = useState(false);
@@ -705,6 +708,82 @@ function App() {
   const say = (msg, kind='err') => { setToast({ msg, kind }); setTimeout(() => setToast(null), 3200); };
   const startTs = () => startVal ? Math.floor(new Date(startVal).getTime()/1000) : null;
   const body = () => ({ form, show_time:showTime, start_ts:startTs() });
+
+  const handleFileUpload = (fieldKey, e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    if (file.size > 8 * 1024 * 1024) {
+      return say('ไฟล์รูปภาพต้องมีขนาดไม่เกิน 8 MB');
+    }
+    setImgUploading(u => ({ ...u, [fieldKey]: true }));
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await api('/api/image/upload', { data_url: reader.result, filename: file.name });
+        if (res && res.ok && res.url) {
+          set(fieldKey, res.url);
+          say('✨ อัปโหลดและตั้งค่ารูปภาพสำเร็จ!', 'ok');
+        } else {
+          say(res?.error || 'อัปโหลดรูปภาพไม่สำเร็จ');
+        }
+      } catch (err) {
+        say('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ');
+      } finally {
+        setImgUploading(u => ({ ...u, [fieldKey]: false }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // แปลงลิงก์รูปภาพจาก Discord (media.discordapp.net / cdn.discordapp.com) หรือลิงก์ยาวอัตโนมัติทันทีที่วางลิงก์
+  useEffect(() => {
+    const val = (form.large_image || '').trim();
+    const needsConvert = val.startsWith('data:image/') || (
+      (val.startsWith('http://') || val.startsWith('https://')) &&
+      !val.startsWith('https://iili.io/') &&
+      !val.startsWith('https://n.uguu.se/') &&
+      !val.startsWith('https://cdn.discordapp.com/app-') &&
+      (val.includes('discordapp.net/attachments') || val.includes('discordapp.com/attachments') || val.length > 200 || val.includes('format=webp'))
+    );
+    if (!needsConvert) return;
+    const timer = setTimeout(async () => {
+      setImgUploading(u => ({ ...u, large_image: true }));
+      try {
+        const r = await api('/api/image/resolve', { url: val });
+        if (r && r.ok && r.url && r.url !== val) {
+          set('large_image', r.url);
+          say('✨ แปลงลิงก์รูปใหญ่ให้รองรับ Discord ถาวรแล้ว!', 'ok');
+        }
+      } catch (e) {}
+      setImgUploading(u => ({ ...u, large_image: false }));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [form.large_image]);
+
+  useEffect(() => {
+    const val = (form.small_image || '').trim();
+    const needsConvert = val.startsWith('data:image/') || (
+      (val.startsWith('http://') || val.startsWith('https://')) &&
+      !val.startsWith('https://iili.io/') &&
+      !val.startsWith('https://n.uguu.se/') &&
+      !val.startsWith('https://cdn.discordapp.com/app-') &&
+      (val.includes('discordapp.net/attachments') || val.includes('discordapp.com/attachments') || val.length > 200 || val.includes('format=webp'))
+    );
+    if (!needsConvert) return;
+    const timer = setTimeout(async () => {
+      setImgUploading(u => ({ ...u, small_image: true }));
+      try {
+        const r = await api('/api/image/resolve', { url: val });
+        if (r && r.ok && r.url && r.url !== val) {
+          set('small_image', r.url);
+          say('✨ แปลงลิงก์รูปเล็กให้รองรับ Discord ถาวรแล้ว!', 'ok');
+        }
+      } catch (e) {}
+      setImgUploading(u => ({ ...u, small_image: false }));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [form.small_image]);
 
   useEffect(() => { setLargeErr(false); }, [form.large_image]);
   useEffect(() => { setSmallErr(false); }, [form.small_image]);
@@ -775,7 +854,11 @@ function App() {
     if (!form.client_id.trim()) return say('กรุณากรอก Application ID');
     fetchDiscordMeta(form.client_id, true);
     const r = await api('/api/start', body()); 
-    if (!r.ok) say(r.error || 'เริ่มไม่สำเร็จ'); 
+    if (r.ok) {
+      if (r.form) setForm(f => ({ ...f, ...r.form }));
+    } else {
+      say(r.error || 'เริ่มไม่สำเร็จ');
+    }
   };
   const stop = async () => { 
     await api('/api/stop', {}); 
@@ -784,7 +867,12 @@ function App() {
   const update = async () => { 
     fetchDiscordMeta(form.client_id, true);
     const r = await api('/api/update', body()); 
-    r.ok ? say('ส่งอัปเดตแล้ว', 'ok') : say(r.error || 'อัปเดตไม่สำเร็จ'); 
+    if (r.ok) {
+      if (r.form) setForm(f => ({ ...f, ...r.form }));
+      say('ส่งอัปเดตแล้ว', 'ok');
+    } else {
+      say(r.error || 'อัปเดตไม่สำเร็จ');
+    }
   };
 
   const clearForm = () => {
@@ -914,7 +1002,7 @@ function App() {
           <div style={{display:'flex', alignItems:'center', gap:8}}>
             <h1>J3A Discord Profile</h1>
             <span style={{fontSize:11, fontFamily:'var(--mono)', padding:'2px 7px', borderRadius:99, background:'var(--accent-soft)', color:'var(--accent)', fontWeight:600}}>
-              v{verInfo?.current_version || '1.2.0'}
+              v{verInfo?.current_version || '1.4.0'}
             </span>
           </div>
           <div className="sub">Web Control Panel · Discord Rich Presence</div>
@@ -926,7 +1014,7 @@ function App() {
           สิทธิ์: Active
         </div>
         <button className="guide-btn" style={{borderColor: verInfo?.has_update ? 'var(--warn)' : 'var(--border)', background: verInfo?.has_update ? 'rgba(245,158,11,0.12)' : 'var(--input)'}} onClick={() => checkVersion(true)} title="ตรวจสอบเวอร์ชันล่าสุดและอัปเดต">
-          {verInfo?.has_update ? `🎉 อัปเดต v${verInfo.latest_version}` : `🔄 เช็คเวอร์ชัน (v${verInfo?.current_version || '1.2.0'})`}
+          {verInfo?.has_update ? `🎉 อัปเดต v${verInfo.latest_version}` : `🔄 เช็คเวอร์ชัน (v${verInfo?.current_version || '1.4.0'})`}
         </button>
         <button className="guide-btn" onClick={openGuide}>📖 คู่มือ</button>
         <button className="guide-btn" style={{borderColor:'rgba(124,92,255,0.4)', background:'rgba(124,92,255,0.1)'}} onClick={logoutLicense} title="ออกจากระบบเพื่อสลับคีย์">🚪 ออกจากระบบ</button>
@@ -1031,6 +1119,9 @@ function App() {
             <button className="btn sm" type="button" onClick={() => { fetchDiscordMeta(form.client_id, true); say('ซิงค์รูปภาพล่าสุดจาก Discord แล้ว', 'ok'); }} title="ดึงรูปไอคอนและ Art Assets ล่าสุดจาก Discord">🔄 ซิงค์รูปจาก Discord</button>
           </h2>
 
+          <input ref={largeFileRef} type="file" accept="image/*" style={{display:'none'}} onChange={e => handleFileUpload('large_image', e)} />
+          <input ref={smallFileRef} type="file" accept="image/*" style={{display:'none'}} onChange={e => handleFileUpload('small_image', e)} />
+
           {(discordMeta.app_icon || discordAssets.length > 0) && (
             <div style={{marginBottom:14, padding:'10px 14px', background:'rgba(124,92,255,0.08)', border:'1px solid rgba(124,92,255,0.25)', borderRadius:12}}>
               <div style={{fontSize:12, color:'var(--text)', fontWeight:600, marginBottom:8, display:'flex', alignItems:'center', gap:6}}>
@@ -1058,18 +1149,30 @@ function App() {
             </div>
           )}
 
+          <div style={{display:'flex', gap:8, flexWrap:'wrap', marginBottom:12}}>
+            <button type="button" className="btn sm" disabled={imgUploading.large_image} onClick={() => largeFileRef.current && largeFileRef.current.click()}>
+              {imgUploading.large_image ? '⏳ กำลังประมวลผลรูปใหญ่…' : '📁 เลือกรูปจากเครื่อง (รูปใหญ่)'}
+            </button>
+            <button type="button" className="btn sm" disabled={imgUploading.small_image} onClick={() => smallFileRef.current && smallFileRef.current.click()}>
+              {imgUploading.small_image ? '⏳ กำลังประมวลผลรูปเล็ก…' : '📁 เลือกรูปจากเครื่อง (รูปเล็ก)'}
+            </button>
+            {form.small_image && (
+              <button type="button" className="btn sm" onClick={() => set('small_image', '')} title="ลบรูปเล็กออก">
+                ✕ ล้างรูปเล็ก
+              </button>
+            )}
+          </div>
+
           <div className="row">
-            <Field label="Large image key / URL (เว้นว่าง = ใช้ไอคอนแอปอัตโนมัติ)" k="large_image" form={form} set={set} placeholder="เว้นว่าง หรือใส่ชื่อ Asset เช่น duck / https://..."/>
+            <Field label="Large image key / URL (เว้นว่าง = ใช้ไอคอนแอปอัตโนมัติ)" k="large_image" form={form} set={set} placeholder="เว้นว่าง, ชื่อ Asset หรือวางลิงก์รูปใดก็ได้..."/>
             <Field label="Large image text (Tooltip)" k="large_text" form={form} set={set} placeholder="ข้อความเมื่อชี้รูปใหญ่"/>
-            <Field label="Small image key / URL" k="small_image" form={form} set={set} placeholder="เช่น duck หรือ https://..."/>
+            <Field label="Small image key / URL (วางลิงก์รูปจาก Discord หรือเว็บใดก็ได้)" k="small_image" form={form} set={set} placeholder="เช่น duck หรือวางลิงก์ https://..."/>
             <Field label="Small image text (Tooltip)" k="small_text" form={form} set={set} placeholder="ข้อความเมื่อชี้รูปเล็ก"/>
           </div>
 
-          {(form.large_image.includes('cdn.discordapp.com/attachments') || form.large_image.includes('media.discordapp.net/attachments')) && (
-            <div className="err-t" style={{marginTop:8, display:'block', fontSize:12}}>
-              ⚠️ ลิงก์ที่มาจากห้องแชท Discord (attachments) มักหมดอายุและติดระบบความปลอดภัยของ Discord แนะนำให้ใช้ชื่อ Art Asset (เช่น duck) หรืออัปโหลดที่ imgur.com แทนครับ
-            </div>
-          )}
+          <div className="hint" style={{marginTop:4}}>
+            ✨ <b>ระบบแปลงลิงก์อัตโนมัติ (v1.4.0):</b> สามารถวางลิงก์รูปจากแชท Discord (<code>media.discordapp.net</code> / <code>cdn.discordapp.com</code>) หรือกด <b>📁 เลือกรูปจากเครื่อง</b> ได้เลย ระบบจะแปลงเป็นลิงก์ถาวรให้แสดงผลบน Discord 100% โดยไม่เกิด Error ครับ
+          </div>
         </div>
 
         <div className="card">

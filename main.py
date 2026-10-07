@@ -364,6 +364,29 @@ class RPCWorker(threading.Thread):
                     self.notify("updated", payload)
                 except Exception as e:
                     lost = isinstance(e, CONN_ERRORS)
+                    if not lost and ("small_image" in payload or "large_image" in payload):
+                        # หากลิงก์รูปภาพภายนอกทำให้ Discord คืนค่า ServerError ให้ลองตัดพารามิเตอร์หรือข้ามรูปที่มีปัญหาเพื่อให้สถานะยังขึ้นปกติ
+                        fallback = dict(payload)
+                        recovered = False
+                        if "small_image" in fallback:
+                            fallback.pop("small_image", None)
+                            fallback.pop("small_text", None)
+                            try:
+                                rpc.update(**fallback)
+                                recovered = True
+                            except Exception:
+                                pass
+                        if not recovered and "large_image" in fallback:
+                            fallback.pop("large_image", None)
+                            fallback.pop("large_text", None)
+                            try:
+                                rpc.update(**fallback)
+                                recovered = True
+                            except Exception:
+                                pass
+                        if recovered:
+                            self.notify("updated", fallback)
+                            continue
                     self.notify("error", (e, lost))
                     if lost:
                         break
@@ -390,6 +413,7 @@ def friendly_error(e):
         "InvalidID": "Application ID ไม่ถูกต้อง — ตรวจสอบใน Developer Portal",
         "InvalidPipe": "เชื่อมต่อ Discord ไม่ได้ — ลองรีสตาร์ท Discord",
         "PipeClosed": "การเชื่อมต่อกับ Discord ถูกปิด",
+        "ServerError": "ลิงก์รูปภาพไม่รองรับหรือยาวเกินกำหนด — แนะนำให้กดปุ่ม 📁 เลือกรูปจากเครื่อง หรือใช้ลิงก์รูปตรง",
     }
     return table.get(name, f"{name}: {e}")
 

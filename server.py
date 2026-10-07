@@ -68,6 +68,199 @@ def log(msg, lvl="info"):
 
 
 _ASSET_CACHE = {}
+_IMAGE_URL_CACHE = {}
+
+
+def upload_image_bytes(img_bytes, ext="png"):
+    """อัปโหลดไบต์รูปภาพไปยังโฮสต์รูปภาพสาธารณะถาวร (คืนค่า URL สั้นสำหรับ Discord RPC)"""
+    import base64
+    import uuid
+    from io import BytesIO
+    from PIL import Image
+
+    ext = (ext or "png").lower().lstrip(".")
+    try:
+        im = Image.open(BytesIO(img_bytes))
+        fmt = (im.format or "").upper()
+        if fmt == "GIF" and getattr(im, "is_animated", False):
+            ext = "gif"
+        elif fmt in ("PNG", "JPEG") and max(im.size) <= 1024:
+            ext = "jpg" if fmt == "JPEG" else "png"
+        else:
+            # แปลง WEBP หรือรูปขนาดใหญ่ให้เป็น PNG ที่ขนาดเหมาะสม (<= 512px) เพื่อให้อัปโหลดเร็วและ Discord รองรับ 100%
+            if max(im.size) > 512:
+                im.thumbnail((512, 512), Image.Resampling.LANCZOS)
+            buf = BytesIO()
+            im.convert("RGBA").save(buf, format="PNG", optimize=True)
+            img_bytes = buf.getvalue()
+            ext = "png"
+    except Exception:
+        if ext not in ("png", "jpg", "jpeg", "gif"):
+            ext = "png"
+
+    # 1. โฮสต์หลัก: freeimage.host (ถาวร, ลิงก์สั้น https://iili.io/..., Discord รองรับ 100%)
+    try:
+        b64 = base64.b64encode(img_bytes).decode("ascii")
+        data = urllib.parse.urlencode(
+            {
+                "key": "6d207e02198a847aa98d0a2a901485a5",
+                "action": "upload",
+                "source": b64,
+                "format": "json",
+            }
+        ).encode("utf-8")
+        req = urllib.request.Request(
+            "https://freeimage.host/api/1/upload",
+            data=data,
+            headers={"User-Agent": "Mozilla/5.0"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            res = json.loads(resp.read().decode("utf-8"))
+            u = (res.get("image") or {}).get("url")
+            if u and u.startswith("http"):
+                return u
+    except Exception:
+        pass
+
+    # 2. โฮสต์สำรอง: uguu.se
+    try:
+        b = uuid.uuid4().hex
+        mime = "image/gif" if ext == "gif" else ("image/jpeg" if ext in ("jpg", "jpeg") else "image/png")
+        body = (
+            f"--{b}\r\n"
+            f'Content-Disposition: form-data; name="files[]"; filename="img.{ext}"\r\n'
+            f"Content-Type: {mime}\r\n\r\n"
+        ).encode("utf-8") + img_bytes + f"\r\n--{b}--\r\n".encode("utf-8")
+        req = urllib.request.Request(
+            "https://uguu.se/upload",
+            data=body,
+            headers={"Content-Type": f"multipart/form-data; boundary={b}", "User-Agent": "Mozilla/5.0"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            res = json.loads(resp.read().decode("utf-8"))
+            files = res.get("files") or []
+            if files and files[0].get("url"):
+                return files[0]["url"]
+    except Exception:
+        pass
+
+    # 3. โฮสต์สำรองที่ 2: tmpfiles.org
+    try:
+        b = uuid.uuid4().hex
+        body = (
+            f"--{b}\r\n"
+            f'Content-Disposition: form-data; name="file"; filename="img.{ext}"\r\n'
+            f"Content-Type: image/png\r\n\r\n"
+        ).encode("utf-8") + img_bytes + f"\r\n--{b}--\r\n".encode("utf-8")
+        req = urllib.request.Request(
+            "https://tmpfiles.org/api/v1/upload",
+            data=body,
+            headers={"Content-Type": f"multipart/form-data; boundary={b}", "User-Agent": "Mozilla/5.0"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            res = json.loads(resp.read().decode("utf-8"))
+            u = (res.get("data") or {}).get("url", "")
+            if u:
+                return u.replace("https://tmpfiles.org/", "https://tmpfiles.org/dl/")
+    except Exception:
+        pass
+
+    return None
+
+
+def resolve_external_image_url(val):
+    """แปลงลิงก์รูปภาพจาก Discord attachments, ลิงก์ยาว (>200 ตัวอักษร), หรือ data:image ให้เป็นลิงก์รูปตรงถาวรที่ Discord RPC รองรับ 100%"""
+    import base64
+
+    val = (val or "").strip()
+    if not val:
+        return ""
+
+    # ตรวจสอบแคชในหน่วยความจำและในไฟล์ config
+    saved_cache = store.data.setdefault("image_cache", {})
+    if val in _IMAGE_URL_CACHE:
+        return _IMAGE_URL_CACHE[val]
+    if val in saved_cache:
+        _IMAGE_URL_CACHE[val] = saved_cache[val]
+        return saved_cache[val]
+
+    # กรณีเป็น Data URL (เช่น data:image/png;base64,...)
+    if val.startswith("data:image/"):
+        try:
+            header, b64_data = val.split(",", 1)
+            ext = "gif" if "gif" in header else ("jpg" if "jpeg" in header or "jpg" in header else "png")
+            img_bytes = base64.b64decode(b64_data)
+            hosted = upload_image_bytes(img_bytes, ext=ext)
+            if hosted:
+                _IMAGE_URL_CACHE[val] = hosted
+                return hosted
+        except Exception:
+            pass
+        return ""
+
+    if not val.startswith(("http://", "https://")):
+        return val
+
+    # หากเป็นลิงก์สั้นที่พร้อมใช้งานกับ Discord อยู่แล้ว ไม่ต้องอัปโหลดซ้ำ
+    safe_short_domains = (
+        "https://iili.io/",
+        "https://n.uguu.se/",
+        "https://tmpfiles.org/dl/",
+        "https://cdn.discordapp.com/app-icons/",
+        "https://cdn.discordapp.com/app-assets/",
+        "https://cdn.discordapp.com/embed/avatars/",
+    )
+    if val.startswith(safe_short_domains) and len(val) <= 220:
+        return val
+
+    is_discord_attachment = any(
+        x in val.lower()
+        for x in (
+            "media.discordapp.net/attachments/",
+            "cdn.discordapp.com/attachments/",
+            "cdn.discordapp.com/ephemeral-attachments/",
+            "discordapp.com/attachments/",
+            "discordapp.net/attachments/",
+        )
+    )
+    needs_rehost = is_discord_attachment or len(val) > 200 or "format=webp" in val.lower() or val.lower().endswith(".webp")
+
+    # ดาวน์โหลดรูปจากลิงก์และอัปโหลดเป็นลิงก์ถาวรสั้นๆ เพื่อให้แสดงบน Discord ได้ 100%
+    if needs_rehost or val.startswith(("http://", "https://")):
+        try:
+            req = urllib.request.Request(
+                val,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                },
+            )
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                ctype = (resp.headers.get("Content-Type") or "").lower()
+                if "image" in ctype or is_discord_attachment or any(val.lower().split("?")[0].endswith(x) for x in (".png", ".jpg", ".jpeg", ".gif", ".webp")):
+                    raw_bytes = resp.read(8 * 1024 * 1024)
+                    ext = "gif" if "gif" in ctype or ".gif" in val.lower() else "png"
+                    hosted = upload_image_bytes(raw_bytes, ext=ext)
+                    if hosted:
+                        _IMAGE_URL_CACHE[val] = hosted
+                        saved_cache[val] = hosted
+                        # จำกัดขนาดแคชไม่ให้เกิน 50 รายการ
+                        if len(saved_cache) > 50:
+                            oldest = next(iter(saved_cache))
+                            saved_cache.pop(oldest, None)
+                        store.save()
+                        log(f"แปลงลิงก์รูปภาพให้รองรับ Discord ถาวรสำเร็จ: {hosted}", "ok")
+                        return hosted
+        except Exception as e:
+            if is_discord_attachment:
+                log("⚠️ ลิงก์รูปจากแชท Discord หมดอายุหรือเข้าถึงไม่ได้ แนะนำให้กดปุ่ม 📁 เลือกรูปจากเครื่อง แทนครับ", "warn")
+
+    # หากไม่สามารถดึงรูปมาแปลงได้ และลิงก์ยาวเกิน 250 ตัวอักษร ให้ตัด Query String ออกเพื่อไม่ให้เกิด ServerError: Unknown error
+    if len(val) > 250:
+        short_val = val.split("?")[0][:250]
+        return short_val
+
+    return val
 
 
 def get_app_metadata(client_id, force=False):
@@ -151,6 +344,12 @@ def normalize_image_key(val, client_id, is_large=True, force=False):
         for a in assets:
             if a["id"] == target_id:
                 return a["name"]
+
+    # หากเป็นลิงก์รูปภาพภายนอก (เช่น media.discordapp.net, cdn.discordapp.com/attachments หรือเว็บอื่นๆ)
+    # ให้แปลงเป็นลิงก์รูปภาพถาวรขนาดสั้นที่ Discord RPC รองรับ 100%
+    if val.startswith(("http://", "https://", "data:image/")):
+        return resolve_external_image_url(val)
+
     return val
 
 
@@ -176,8 +375,14 @@ def build_payload(form, show_time, start_ts, force_refresh=False):
     elif len(state) > 128:
         state = state[:128]
 
-    large_img = normalize_image_key(v("large_image"), cid, is_large=True, force=force_refresh)
-    small_img = normalize_image_key(v("small_image"), cid, is_large=False, force=False)
+    raw_large = v("large_image")
+    raw_small = v("small_image")
+    large_img = normalize_image_key(raw_large, cid, is_large=True, force=force_refresh)
+    small_img = normalize_image_key(raw_small, cid, is_large=False, force=False)
+    if raw_large.startswith(("http://", "https://", "data:image/")) and large_img.startswith("http"):
+        form["large_image"] = large_img
+    if raw_small.startswith(("http://", "https://", "data:image/")) and small_img.startswith("http"):
+        form["small_image"] = small_img
     if small_img and not large_img:
         large_img = small_img
 
@@ -310,19 +515,19 @@ def get_favicon():
     return send_file(ico_file, mimetype="image/x-icon")
 
 
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.4.0"
 DEFAULT_VERSION_INFO = {
     "version": APP_VERSION,
-    "release_date": "2026-10-06",
+    "release_date": "2026-10-07",
     "github_repo": "Newwee/J3ADiscordProfile",
     "version_check_url": "https://raw.githubusercontent.com/Newwee/J3ADiscordProfile/main/version.json",
     "download_url": "https://github.com/Newwee/J3ADiscordProfile/releases/latest/download/J3ADiscordProfile.exe",
     "drive_url": "https://drive.google.com/file/d/18Mt5mytIu-jB7Jt7efyr_nTxWGkDTuV0/view?usp=drive_link",
     "changelog": [
-        "อัปเกรดเป็นเวอร์ชัน v1.3.0 (ทดสอบระบบ Auto-Update ผ่าน GitHub)",
-        "เพิ่มระบบ Priority Mode (Competing) ให้แอปแสดงอยู่บนสุดของหน้าโปรไฟล์เสมอ ทับทุกเกม 100%",
-        "ซิงค์รูปไอคอนแอปหลักและ Art Assets ล่าสุดจาก Discord อัตโนมัติ",
-        "ระบบตรวจสอบเวอร์ชัน & อัปเดตอัตโนมัติในคลิกเดียว พร้อมระบบถอนการติดตั้งครบวงจร",
+        "อัปเกรดเป็นเวอร์ชัน v1.4.0 — แก้ปัญหาใส่ลิงก์รูปภาพจาก Discord (media.discordapp.net / cdn.discordapp.com) และลิงก์ยาวที่ทำให้เกิด ServerError: Unknown error",
+        "เพิ่มระบบแปลงลิงก์รูปภาพภายนอกให้เป็นลิงก์ถาวรขนาดสั้นอัตโนมัติ (ไม่หมดอายุ และแสดงผลบน Discord 100%)",
+        "เพิ่มปุ่ม 📁 เลือกรูปจากเครื่อง สำหรับรูปใหญ่ (Large Image) และรูปเล็ก (Small Image) อัปโหลดตรงจากคอมพิวเตอร์ได้ทันที",
+        "เพิ่มระบบป้องกัน ServerError ใน RPCWorker เพื่อให้สถานะออนไลน์ต่อเนื่องแม้ลิงก์รูปมีปัญหา",
     ],
 }
 
@@ -598,6 +803,41 @@ def api_discord_assets():
     )
 
 
+@app.post("/api/image/upload")
+def api_image_upload():
+    """รับไฟล์รูปภาพหรือ Base64 Data URL จากผู้ใช้ แล้วอัปโหลดเป็นลิงก์ตรงถาวรสำหรับ Discord RPC"""
+    import base64
+
+    data = request.get_json(silent=True) or {}
+    data_url = str(data.get("data_url") or "").strip()
+    if not data_url.startswith("data:image/"):
+        return jsonify(ok=False, error="รูปแบบไฟล์รูปภาพไม่ถูกต้อง"), 400
+    try:
+        header, b64_data = data_url.split(",", 1)
+        ext = "gif" if "gif" in header else ("jpg" if "jpeg" in header or "jpg" in header else "png")
+        img_bytes = base64.b64decode(b64_data)
+        hosted = upload_image_bytes(img_bytes, ext=ext)
+        if hosted:
+            log(f"อัปโหลดรูปภาพสำเร็จ: {hosted}", "ok")
+            return jsonify(ok=True, url=hosted)
+        return jsonify(ok=False, error="ไม่สามารถอัปโหลดรูปภาพไปยังเซิร์ฟเวอร์ฝากรูปได้ในขณะนี้"), 502
+    except Exception as e:
+        return jsonify(ok=False, error=f"เกิดข้อผิดพลาดในการอัปโหลดรูป: {e}"), 400
+
+
+@app.post("/api/image/resolve")
+def api_image_resolve():
+    """แปลงลิงก์รูปภาพภายนอก (เช่น media.discordapp.net / cdn.discordapp.com) ให้เป็นลิงก์ถาวรที่ Discord รองรับ"""
+    data = request.get_json(silent=True) or {}
+    raw_url = str(data.get("url") or "").strip()
+    if not raw_url:
+        return jsonify(ok=False, error="ไม่พบลิงก์รูปภาพ"), 400
+    resolved = resolve_external_image_url(raw_url)
+    if resolved:
+        return jsonify(ok=True, url=resolved, converted=(resolved != raw_url))
+    return jsonify(ok=False, error="ไม่สามารถแปลงลิงก์รูปภาพนี้ได้"), 400
+
+
 # ── License Routes ──────────────────────────────────────────
 @app.get("/api/license/status")
 def api_license_status():
@@ -718,7 +958,7 @@ def api_start():
         w.notify = lambda ev, data=None, w=w: on_rpc(w, ev, data)
         S["worker"] = w
         w.start()
-    return jsonify(ok=True)
+    return jsonify(ok=True, form=form)
 
 
 @app.post("/api/update")
@@ -742,7 +982,7 @@ def api_update():
         S["start_ts"] = (ts or S["start_ts"] or int(time.time())) if show else None
         persist()
         push_update()
-    return jsonify(ok=True)
+    return jsonify(ok=True, form=form)
 
 
 @app.post("/api/stop")
